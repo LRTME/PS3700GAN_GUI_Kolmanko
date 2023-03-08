@@ -1,0 +1,11 @@
+/Basic_GUI_COM_settings_dialog.py
+/Basic_GUI_COM_statistics_dialog.py
+/Basic_GUI_LOG_mod_dialog.py
+/Basic_GUI_main_window_frame.py
+/Basic_GUI_about_dialog.py
+/.directory
+/dist
+/build
+/__pycache__
+/.idea
+/git_commit_sha.txt
