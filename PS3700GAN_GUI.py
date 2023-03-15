@@ -28,21 +28,17 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
 
     def __init__(self, parent=None):
         super().__init__(SERIAL_NUMBER)
-        self.setWindowTitle("Basic_GUI")
+        self.setWindowTitle("PS3700GAN_GUI")
         self.about_dialog.lbl_description.setText(self.windowTitle())
 
         self.ping_count = 0
 
         self.commonitor.connect_rx_handler(0x0900, self.received_ping)
-        self.commonitor.connect_rx_handler(0x0C01, self.cpu_load_changed)
         self.commonitor.connect_rx_handler(0x0D01, self.state_received)
-
-        # set background color to reflect state
-        self.lbl_led.setStyleSheet(COLOR_RED)
-        self.led_state = False
 
         # connect buttons
         self.btn_on_off.clicked.connect(self.btn_on_off_clicked)
+        self.btn_mode.clicked.connect(self.btn_mode_clicked)
 
         # zahtevam statusne podatke za data logger in generator signalov
         # if com port is open request parameters
@@ -60,44 +56,56 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
     def received_ping(self):
         self.ping_count = self.ping_count + 1
 
-    def cpu_load_changed(self):
-        # get the data
-        data = self.commonitor.get_data()
-
-        # decode data
-        cpu_load = 100 * struct.unpack('<f', data[0:4])[0]
-        self.lbl_cpu_load.setText("{:.1f}".format(cpu_load))
+    def btn_mode_clicked(self):
+        self.commonitor.send_packet(0x0D02, struct.pack('<h', 0x0000))
 
     def btn_on_off_clicked(self):
-        if self.led_state:
-            # for the time being disable the button
-            self.btn_on_off.setEnabled(False)
+        if self.lbl_state.text() == "Running":
             # send request to turn on the rectifier
             self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0000))
-        else:
-            # for the time being disable the button
-            self.btn_on_off.setEnabled(False)
+        if self.lbl_state.text() == "Standby":
             # send request to turn off the rectifier
             self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0001))
+        if self.lbl_state.text() == "Fault":
+            # send request to turn off the rectifier
+            self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0002))
 
     def state_received(self):
         # grab the date
         data = self.commonitor.get_data()
 
         # decode data
-        led_state = struct.unpack('<h', data[0:2])[0]
+        cpu_load = struct.unpack('<f', data[0:4])[0]
+        state = struct.unpack('<h', data[4:6])[0]
+        mode = struct.unpack('<h', data[6:8])[0]
 
-        if led_state == 0:
-            self.lbl_led.setStyleSheet(COLOR_RED)
-            self.btn_on_off.setText("LED on")
-            self.led_state = False
-        else:
-            self.lbl_led.setStyleSheet(COLOR_GREEN)
-            self.btn_on_off.setText("LED off")
-            self.led_state = True
+        cpu_load = 100 * struct.unpack('<f', data[0:4])[0]
+        self.lbl_cpu_load.setText("{:.1f}".format(cpu_load))
 
-        # enable button
-        self.btn_on_off.setEnabled(True)
+        # SM_standby = 0, SM_startup, SM_running, SM_fault
+        if state == 0:
+            self.lbl_state.setStyleSheet(COLOR_YELLOW)
+            self.lbl_state.setText("Standby")
+        if state == 1:
+            self.lbl_state.setStyleSheet(COLOR_YELLOW)
+            self.lbl_state.setText("Startup")
+        if state == 2:
+            self.lbl_state.setStyleSheet(COLOR_GREEN)
+            self.lbl_state.setText("Running")
+        if state == 3:
+            self.lbl_state.setStyleSheet(COLOR_RED)
+            self.lbl_state.setText("Fault")
+
+        # reg_PI = 0, reg_DCC_I, reg_DCC_II
+        if mode == 0:
+            self.lbl_mode.setStyleSheet(COLOR_YELLOW)
+            self.lbl_mode.setText("PI reg.")
+        if mode == 1:
+            self.lbl_mode.setStyleSheet(COLOR_YELLOW)
+            self.lbl_mode.setText("DCC I")
+        if mode == 2:
+            self.lbl_mode.setStyleSheet(COLOR_GREEN)
+            self.lbl_mode.setText("DCC II")
 
     """
     Measurement automation
