@@ -20,6 +20,7 @@ import Basic_GUI_about
 import LOG_mod
 import REF_gen
 import DLOG_gen
+import AUT_measure
 
 
 class AppMainClass(QtWidgets.QMainWindow, Basic_GUI_main_window_frame.Ui_MainWindow):
@@ -69,6 +70,9 @@ class AppMainClass(QtWidgets.QMainWindow, Basic_GUI_main_window_frame.Ui_MainWin
 
         # refgen init
         self.ref_gen = REF_gen.REF_generator(self)
+
+        # automatic measurements
+        self.aut_measure = AUT_measure.AUT_measurement(self)
 
     # ko zaprem aplikacijo za ziher zaprem comport
     def closeEvent(self, event):

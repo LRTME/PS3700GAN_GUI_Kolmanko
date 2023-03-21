@@ -17,10 +17,14 @@ class About(QtWidgets.QDialog, Basic_GUI_about_dialog.Ui_Dialog):
 
         self.setWindowTitle("About")
 
-        # registriram klik na gumb OK
+        # register button click
         self.btn_ok.clicked.connect(self.ok_click)
 
-        # preberem sha
+        # check if git_commit_sha.txt file exist
+        # if it doesn't exist, create it
+        if not os.path.exists('git_commit_sha.txt'):
+            with open('git_commit_sha.txt', 'w') as f:
+                f.write('NoCommit\n')
         with open('git_commit_sha.txt') as f:
             sha = f.readline().strip()
         self.lbl_git_sha.setText("Git SHA: "+sha)
