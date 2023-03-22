@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>790</width>
-    <height>709</height>
+    <width>947</width>
+    <height>777</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,131 +15,156 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="8" column="2">
-     <widget class="QCheckBox" name="ch2_chkbox">
-      <property name="text">
-       <string>Ch2</string>
-      </property>
-     </widget>
-    </item>
-    <item row="25" column="2">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>Vzorčna freq.</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1" alignment="Qt::AlignHCenter">
-     <widget class="QLabel" name="lbl_amp">
+    <item row="7" column="3" rowspan="21">
+     <widget class="PlotWidget" name="PlotWidget" native="true">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="2">
+     <widget class="QLabel" name="prescalar_label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Prescalar</string>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="2">
+     <widget class="QCheckBox" name="ch5_chkbox">
+      <property name="text">
+       <string>Ch5</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="1" rowspan="4" alignment="Qt::AlignHCenter">
+     <widget class="QSlider" name="sld_offset">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
       </property>
       <property name="maximumSize">
        <size>
         <width>80</width>
-        <height>16777215</height>
+        <height>68</height>
        </size>
       </property>
-      <property name="text">
-       <string>0.0</string>
+      <property name="maximum">
+       <number>100</number>
       </property>
-     </widget>
-    </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="label_11">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Vir ure</string>
-      </property>
-     </widget>
-    </item>
-    <item row="18" column="0">
-     <widget class="Line" name="line">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="2">
-     <widget class="QCheckBox" name="ch4_chkbox">
-      <property name="text">
-       <string>Ch4</string>
-      </property>
-     </widget>
-    </item>
-    <item row="9" column="0">
-     <widget class="QLabel" name="label_10">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Harmonik</string>
-      </property>
-     </widget>
-    </item>
-    <item row="27" column="2">
-     <spacer name="verticalSpacer">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="20" column="2">
-     <widget class="SpinBox" name="points_spin">
-      <property name="maximumSize">
-       <size>
-        <width>78</width>
-        <height>22</height>
-       </size>
-      </property>
-      <property name="minimum">
-       <number>100</number>
-      </property>
-      <property name="maximum">
-       <number>1000</number>
-      </property>
-      <property name="singleStep">
-       <number>10</number>
-      </property>
-      <property name="value">
-       <number>200</number>
-      </property>
      </widget>
     </item>
-    <item row="26" column="2">
-     <widget class="QLineEdit" name="sampling_freq_line">
+    <item row="13" column="0">
+     <widget class="QComboBox" name="mode_sel">
+      <property name="minimumSize">
+       <size>
+        <width>70</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
-        <width>80</width>
+        <width>70</width>
         <height>16777215</height>
        </size>
       </property>
+      <item>
+       <property name="text">
+        <string>Prosto tekoče</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Enkratno</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="22" column="2">
+     <widget class="QComboBox" name="trigger">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <item>
+       <property name="text">
+        <string>Ref_cnt</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Kot</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_7">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>15</height>
+       </size>
+      </property>
       <property name="text">
-       <string>20000</string>
+       <string>Frekvenca</string>
       </property>
      </widget>
     </item>
-    <item row="7" column="2">
-     <widget class="QCheckBox" name="ch1_chkbox">
+    <item row="23" column="2">
+     <widget class="QLabel" name="label_3">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="text">
-       <string>Ch1</string>
+       <string>Mode</string>
+      </property>
+     </widget>
+    </item>
+    <item row="22" column="0">
+     <widget class="QLabel" name="lbl_mode">
+      <property name="text">
+       <string>Open_loop</string>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="0">
+     <widget class="QPushButton" name="btn_on_off">
+      <property name="text">
+       <string>On/Off</string>
       </property>
      </widget>
     </item>
@@ -162,30 +187,18 @@
       </property>
      </widget>
     </item>
-    <item row="24" column="2">
-     <widget class="QComboBox" name="trigger_mode">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+    <item row="27" column="2">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
-      <item>
-       <property name="text">
-        <string>Normal</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Single</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Stop</string>
-       </property>
-      </item>
-     </widget>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
     </item>
     <item row="0" column="1" alignment="Qt::AlignHCenter">
      <widget class="QLabel" name="label_6">
@@ -215,15 +228,48 @@
       </property>
      </widget>
     </item>
-    <item row="16" column="2">
-     <widget class="QCheckBox" name="cb_cursor">
+    <item row="9" column="2">
+     <widget class="QCheckBox" name="ch3_chkbox">
       <property name="text">
-       <string>Cursor</string>
+       <string>Ch3</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label">
+    <item row="25" column="2">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>Vzorčna freq.</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>15</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Naklon</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="2">
+     <widget class="QCheckBox" name="ch8_chkbox">
+      <property name="text">
+       <string>Ch8</string>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="2">
+     <widget class="QLabel" name="points_label">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -231,73 +277,48 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>Oblika</string>
+       <string>Points</string>
       </property>
      </widget>
     </item>
-    <item row="24" column="0" rowspan="3">
-     <widget class="QLabel" name="label_13">
-      <property name="text">
-       <string/>
+    <item row="20" column="2">
+     <widget class="SpinBox" name="points_spin">
+      <property name="maximumSize">
+       <size>
+        <width>78</width>
+        <height>22</height>
+       </size>
       </property>
-      <property name="pixmap">
-       <pixmap>Logo_LRTME.png</pixmap>
+      <property name="minimum">
+       <number>100</number>
+      </property>
+      <property name="maximum">
+       <number>1000</number>
+      </property>
+      <property name="singleStep">
+       <number>10</number>
+      </property>
+      <property name="value">
+       <number>200</number>
       </property>
      </widget>
     </item>
-    <item row="16" column="0">
-     <widget class="QPushButton" name="btn_ref_single_shot">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Start/Stop</string>
-      </property>
-     </widget>
-    </item>
-    <item row="22" column="2">
-     <widget class="QComboBox" name="trigger">
+    <item row="1" column="1" alignment="Qt::AlignHCenter">
+     <widget class="QLabel" name="lbl_amp">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <item>
-       <property name="text">
-        <string>Ref_cnt</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Kot</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="13" column="2">
-     <widget class="QCheckBox" name="ch6_chkbox">
-      <property name="text">
-       <string>Ch6</string>
-      </property>
-     </widget>
-    </item>
-    <item row="14" column="0">
-     <widget class="QLabel" name="lbl_cycle_number">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+      <property name="maximumSize">
+       <size>
+        <width>80</width>
+        <height>16777215</height>
+       </size>
       </property>
       <property name="text">
-       <string>Število period</string>
+       <string>0.0</string>
       </property>
      </widget>
     </item>
@@ -329,478 +350,6 @@
       </property>
      </widget>
     </item>
-    <item row="12" column="0">
-     <widget class="QLabel" name="label_12">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Način delovanja</string>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="0">
-     <widget class="SpinBox" name="harmonik_spin">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>70</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>70</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="minimum">
-       <number>1</number>
-      </property>
-      <property name="value">
-       <number>1</number>
-      </property>
-     </widget>
-    </item>
-    <item row="17" column="0">
-     <widget class="QLabel" name="lbl_reg_gen_mode">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Run</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="0">
-     <widget class="QComboBox" name="clock_sel">
-      <property name="minimumSize">
-       <size>
-        <width>70</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>70</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <item>
-       <property name="text">
-        <string>Notranji</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Zunanji</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="18" column="1" rowspan="9" alignment="Qt::AlignHCenter">
-     <widget class="QSlider" name="sld_duty">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>80</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="12" column="2">
-     <widget class="QCheckBox" name="ch5_chkbox">
-      <property name="text">
-       <string>Ch5</string>
-      </property>
-     </widget>
-    </item>
-    <item row="9" column="2">
-     <widget class="QCheckBox" name="ch3_chkbox">
-      <property name="text">
-       <string>Ch3</string>
-      </property>
-     </widget>
-    </item>
-    <item row="19" column="2">
-     <widget class="QLabel" name="points_label">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Points</string>
-      </property>
-     </widget>
-    </item>
-    <item row="18" column="2">
-     <widget class="SpinBox" name="prescalar_spin">
-      <property name="maximumSize">
-       <size>
-        <width>78</width>
-        <height>22</height>
-       </size>
-      </property>
-      <property name="minimum">
-       <number>1</number>
-      </property>
-      <property name="maximum">
-       <number>200</number>
-      </property>
-      <property name="value">
-       <number>1</number>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QComboBox" name="oblika_sel">
-      <property name="minimumSize">
-       <size>
-        <width>70</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>70</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <item>
-       <property name="text">
-        <string>Konst</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Step</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Step_up_down</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Slew</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Sine</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Ramp_up</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Ramp_up_down</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="13" column="0">
-     <widget class="QComboBox" name="mode_sel">
-      <property name="minimumSize">
-       <size>
-        <width>70</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>70</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <item>
-       <property name="text">
-        <string>Prosto tekoče</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Enkratno</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="9" column="1" rowspan="7" alignment="Qt::AlignHCenter">
-     <widget class="QSlider" name="sld_offset">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>80</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="19" column="0">
-     <widget class="QPushButton" name="btn_on_off">
-      <property name="text">
-       <string>On/Off</string>
-      </property>
-     </widget>
-    </item>
-    <item row="23" column="2">
-     <widget class="QLabel" name="label_3">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Mode</string>
-      </property>
-     </widget>
-    </item>
-    <item row="16" column="1" alignment="Qt::AlignHCenter">
-     <widget class="QLabel" name="label_9">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>80</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Duty</string>
-      </property>
-     </widget>
-    </item>
-    <item row="21" column="2">
-     <widget class="QLabel" name="mode_label">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Trigger</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="3" rowspan="21">
-     <widget class="PlotWidget" name="PlotWidget" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-    </item>
-    <item row="15" column="2">
-     <widget class="QCheckBox" name="ch8_chkbox">
-      <property name="text">
-       <string>Ch8</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_7">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>15</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Frekvenca</string>
-      </property>
-     </widget>
-    </item>
-    <item row="17" column="2">
-     <widget class="QLabel" name="prescalar_label">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Prescalar</string>
-      </property>
-     </widget>
-    </item>
-    <item row="15" column="0">
-     <widget class="SpinBox" name="cycle_number_spin">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>70</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>70</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="value">
-       <number>3</number>
-      </property>
-     </widget>
-    </item>
-    <item row="14" column="2">
-     <widget class="QCheckBox" name="ch7_chkbox">
-      <property name="text">
-       <string>Ch7</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="1" alignment="Qt::AlignHCenter">
-     <widget class="QLabel" name="label_2">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>80</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Offset</string>
-      </property>
-     </widget>
-    </item>
-    <item row="17" column="1" alignment="Qt::AlignHCenter">
-     <widget class="QLabel" name="lbl_duty">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>80</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>0.5</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="SpinBox" name="frekvenca_spin">
-      <property name="minimumSize">
-       <size>
-        <width>70</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>70</width>
-        <height>20</height>
-       </size>
-      </property>
-      <property name="value">
-       <number>1</number>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label_5">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>15</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Naklon</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0">
-     <widget class="SpinBox" name="naklon_spin">
-      <property name="minimumSize">
-       <size>
-        <width>70</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>70</width>
-        <height>20</height>
-       </size>
-      </property>
-      <property name="value">
-       <number>1</number>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="2" rowspan="6" colspan="2">
      <widget class="QTabWidget" name="tabWidget">
       <property name="sizePolicy">
@@ -817,58 +366,18 @@
         <string>Regulacija</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_23">
-          <property name="text">
-           <string>U out</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QLabel" name="label_25">
-          <property name="text">
-           <string>I 2</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="6">
-         <spacer name="horizontalSpacer">
+        <item row="4" column="0">
+         <spacer name="verticalSpacer_2">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>40</width>
-            <height>0</height>
+            <width>20</width>
+            <height>40</height>
            </size>
           </property>
          </spacer>
-        </item>
-        <item row="0" column="3">
-         <widget class="QLabel" name="lbl_current_1">
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <property name="text">
-           <string>0.0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="4">
-         <widget class="QLabel" name="label_28">
-          <property name="text">
-           <string>I 5</string>
-          </property>
-         </widget>
         </item>
         <item row="1" column="1">
          <widget class="QLabel" name="lbl_u_dc">
@@ -879,7 +388,7 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Sunken</enum>
@@ -889,10 +398,10 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_22">
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_23">
           <property name="text">
-           <string>U dc</string>
+           <string>U out</string>
           </property>
          </widget>
         </item>
@@ -905,7 +414,140 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="5">
+         <widget class="QLabel" name="label_26">
+          <property name="text">
+           <string>I 3</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="8">
+         <widget class="QLabel" name="lbl_current_5">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="label_30">
+          <property name="text">
+           <string>I max</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5">
+         <widget class="QLabel" name="label_24">
+          <property name="text">
+           <string>I 1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="6">
+         <widget class="QLabel" name="lbl_current_2">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="7">
+         <widget class="QLabel" name="label_28">
+          <property name="text">
+           <string>I 5</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QLineEdit" name="le_amp_norm">
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="6">
+         <widget class="QLabel" name="lbl_current_3">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="lbl_cpu_load">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="8">
+         <widget class="QLabel" name="lbl_current_6">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Sunken</enum>
@@ -922,105 +564,112 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="3">
-         <widget class="QLabel" name="lbl_current_3">
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <property name="text">
-           <string>0.0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <spacer name="verticalSpacer_2">
+        <item row="0" column="9">
+         <spacer name="horizontalSpacer">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>20</width>
-            <height>40</height>
+            <width>40</width>
+            <height>0</height>
            </size>
           </property>
          </spacer>
         </item>
-        <item row="2" column="2">
-         <widget class="QLabel" name="label_26">
-          <property name="text">
-           <string>I 3</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="label_24">
-          <property name="text">
-           <string>I 1</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QLabel" name="lbl_current_2">
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <property name="text">
-           <string>0.0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="4">
-         <widget class="QLabel" name="label_29">
-          <property name="text">
-           <string>I 6</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="lbl_cpu_load">
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <property name="text">
-           <string>0.0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="4">
+        <item row="0" column="7">
          <widget class="QLabel" name="label_27">
           <property name="text">
            <string>I 4</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="5">
+        <item row="0" column="6">
+         <widget class="QLabel" name="lbl_current_1">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QLabel" name="label_32">
+          <property name="text">
+           <string>I phantom</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QLabel" name="lbl_current_phantom">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_22">
+          <property name="text">
+           <string>U dc</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="7">
+         <widget class="QLabel" name="label_29">
+          <property name="text">
+           <string>I 6</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QLabel" name="label_25">
+          <property name="text">
+           <string>I 2</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QLabel" name="lbl_current">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="8">
          <widget class="QLabel" name="lbl_current_4">
           <property name="minimumSize">
            <size>
@@ -1029,7 +678,7 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Sunken</enum>
@@ -1039,41 +688,17 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="5">
-         <widget class="QLabel" name="lbl_current_5">
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
+        <item row="1" column="2">
+         <widget class="QLabel" name="label_31">
           <property name="text">
-           <string>0.0</string>
+           <string>I normal</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="5">
-         <widget class="QLabel" name="lbl_current_6">
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <property name="text">
-           <string>0.0</string>
+        <item row="0" column="4" rowspan="3">
+         <widget class="Line" name="line_4">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
           </property>
          </widget>
         </item>
@@ -1332,10 +957,278 @@
       </widget>
      </widget>
     </item>
-    <item row="20" column="0">
-     <widget class="QLabel" name="lbl_state">
+    <item row="14" column="2">
+     <widget class="QCheckBox" name="ch7_chkbox">
       <property name="text">
-       <string>Startup</string>
+       <string>Ch7</string>
+      </property>
+     </widget>
+    </item>
+    <item row="18" column="2">
+     <widget class="SpinBox" name="prescalar_spin">
+      <property name="maximumSize">
+       <size>
+        <width>78</width>
+        <height>22</height>
+       </size>
+      </property>
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>200</number>
+      </property>
+      <property name="value">
+       <number>1</number>
+      </property>
+     </widget>
+    </item>
+    <item row="16" column="0">
+     <widget class="QPushButton" name="btn_ref_single_shot">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Start/Stop</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="SpinBox" name="naklon_spin">
+      <property name="minimumSize">
+       <size>
+        <width>70</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>70</width>
+        <height>20</height>
+       </size>
+      </property>
+      <property name="value">
+       <number>1</number>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="0">
+     <widget class="QLabel" name="label_12">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Način delovanja</string>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="1" alignment="Qt::AlignHCenter">
+     <widget class="QLabel" name="label_9">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>80</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Duty</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QComboBox" name="clock_sel">
+      <property name="minimumSize">
+       <size>
+        <width>70</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>70</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <item>
+       <property name="text">
+        <string>Notranji</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Zunanji</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="21" column="2">
+     <widget class="QLabel" name="mode_label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Trigger</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="0">
+     <widget class="SpinBox" name="harmonik_spin">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>70</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>70</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="value">
+       <number>1</number>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="0">
+     <widget class="SpinBox" name="cycle_number_spin">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>70</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>70</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="value">
+       <number>3</number>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="SpinBox" name="frekvenca_spin">
+      <property name="minimumSize">
+       <size>
+        <width>70</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>70</width>
+        <height>20</height>
+       </size>
+      </property>
+      <property name="value">
+       <number>1</number>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="1" alignment="Qt::AlignHCenter">
+     <widget class="QLabel" name="lbl_duty">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>80</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>0.5</string>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="0">
+     <widget class="QLabel" name="lbl_cycle_number">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Število period</string>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="0">
+     <widget class="QLabel" name="lbl_reg_gen_mode">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Run</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="0">
+     <widget class="QLabel" name="label_10">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Harmonik</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1" alignment="Qt::AlignHCenter">
+     <widget class="QLabel" name="label_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>80</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Offset</string>
       </property>
      </widget>
     </item>
@@ -1346,10 +1239,223 @@
       </property>
      </widget>
     </item>
-    <item row="22" column="0">
-     <widget class="QLabel" name="lbl_mode">
+    <item row="7" column="2">
+     <widget class="QCheckBox" name="ch1_chkbox">
       <property name="text">
-       <string>Open_loop</string>
+       <string>Ch1</string>
+      </property>
+     </widget>
+    </item>
+    <item row="24" column="0" rowspan="3">
+     <widget class="QLabel" name="label_13">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap>Logo_LRTME.png</pixmap>
+      </property>
+     </widget>
+    </item>
+    <item row="24" column="2">
+     <widget class="QComboBox" name="trigger_mode">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <item>
+       <property name="text">
+        <string>Normal</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Single</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Stop</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="26" column="2">
+     <widget class="QLineEdit" name="sampling_freq_line">
+      <property name="maximumSize">
+       <size>
+        <width>80</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>20000</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="2">
+     <widget class="QCheckBox" name="ch2_chkbox">
+      <property name="text">
+       <string>Ch2</string>
+      </property>
+     </widget>
+    </item>
+    <item row="16" column="2">
+     <widget class="QCheckBox" name="cb_cursor">
+      <property name="text">
+       <string>Cursor</string>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="2">
+     <widget class="QCheckBox" name="ch6_chkbox">
+      <property name="text">
+       <string>Ch6</string>
+      </property>
+     </widget>
+    </item>
+    <item row="20" column="0">
+     <widget class="QLabel" name="lbl_state">
+      <property name="text">
+       <string>Startup</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QComboBox" name="oblika_sel">
+      <property name="minimumSize">
+       <size>
+        <width>70</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>70</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <item>
+       <property name="text">
+        <string>Konst</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Step</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Step_up_down</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Slew</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sine</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Ramp_up</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Ramp_up_down</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Oblika</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_11">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Vir ure</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="2">
+     <widget class="QCheckBox" name="ch4_chkbox">
+      <property name="text">
+       <string>Ch4</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="1" rowspan="3" alignment="Qt::AlignHCenter">
+     <widget class="QSlider" name="sld_duty">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>80</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="maximum">
+       <number>100</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="18" column="0" colspan="2">
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="23" column="1" rowspan="4" alignment="Qt::AlignHCenter">
+     <widget class="QSlider" name="sld_phantom">
+      <property name="maximum">
+       <number>100</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="21" column="1" alignment="Qt::AlignHCenter">
+     <widget class="QLabel" name="label_33">
+      <property name="text">
+       <string>Phantom</string>
+      </property>
+     </widget>
+    </item>
+    <item row="22" column="1" alignment="Qt::AlignHCenter">
+     <widget class="QLabel" name="lbl_phantom">
+      <property name="text">
+       <string>0.0</string>
       </property>
      </widget>
     </item>
@@ -1360,7 +1466,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>790</width>
+     <width>947</width>
      <height>21</height>
     </rect>
    </property>

@@ -8,7 +8,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import singleton
 import numpy as np
 
-SERIAL_NUMBER = None
+SERIAL_NUMBER = 'TI0JAY8S'
 
 COLOR_YELLOW = "background-color:#F8D129;"
 COLOR_RED = "background-color:#c83531;"
@@ -33,20 +33,55 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
 
         self.commonitor.connect_rx_handler(0x0900, self.received_ping)
         self.commonitor.connect_rx_handler(0x0D01, self.state_received)
+        self.commonitor.connect_rx_handler(0x0D02, self.settings_received)
 
         # connect buttons
         self.btn_on_off.clicked.connect(self.btn_on_off_clicked)
         self.btn_mode.clicked.connect(self.btn_mode_clicked)
 
+        # phantom slider
+        self.sld_phantom.valueChanged[int].connect(self.phantom_changed)
+        self.sld_phantom.sliderReleased.connect(self.request_settings)
+
+        # connect max current line edit
+        self.le_amp_norm.editingFinished.connect(self.amplitude_norm_set)
+        self.norm_max = 5
+
         # zahtevam statusne podatke za data logger in generator signalov
         # if com port is open request parameters
         if self.commonitor.is_port_open():
             self.request_state()
+            self.request_settings()
         else:
             self.commonitor.register_on_open_callback(self.request_state)
+            self.commonitor.register_on_open_callback(self.request_settings)
+
+    def phantom_changed(self):
+        # osvezim napis pod sliderjem
+        a = self.sld_phantom.value()
+        self.lbl_phantom.setText(str(round(self.sld_phantom.value() / 100, 2)))
+        # posljem paket po portu
+        data = struct.pack('<f', self.sld_phantom.value() / 100)
+        self.commonitor.send_packet(0x0D05, data)
+
+    def amplitude_norm_set(self):
+        text = self.le_amp_norm.text().replace(",", ".")
+        try:
+            num = float(text)
+        except ValueError:
+            num = float(self.norm_max)
+        if num < 0:
+            num = 0
+        if num > 30:
+            num = 30
+        data = struct.pack('<f', num)
+        self.commonitor.send_packet(0x0D03, data)
 
     def request_state(self):
         self.commonitor.send_packet(0x0D00, None)
+
+    def request_settings(self):
+        self.commonitor.send_packet(0x0D04, None)
 
     def received_ping(self):
         self.ping_count = self.ping_count + 1
@@ -65,8 +100,24 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
             # send request to turn off the rectifier
             self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0002))
 
+    def settings_received(self):
+        # grab the data
+        data = self.commonitor.get_data()
+        # decode data
+        current_norm = round(struct.unpack('<f', data[0:4])[0], 2)
+        phantom = round(struct.unpack('<f', data[4:8])[0], 2)
+
+        self.le_amp_norm.blockSignals(True)
+        self.le_amp_norm.setText("{:.1f}".format(current_norm))
+        self.le_amp_norm.blockSignals(False)
+
+        self.sld_phantom.blockSignals(True)
+        self.sld_phantom.setValue(int(phantom*100))
+        self.sld_phantom.blockSignals(False)
+        self.lbl_phantom.setText(str(self.sld_phantom.value() / 100))
+
     def state_received(self):
-        # grab the date
+        # grab the data
         data = self.commonitor.get_data()
 
         # decode data
@@ -82,8 +133,11 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         current_5 = struct.unpack('<f', data[28:32])[0]
         current_6 = struct.unpack('<f', data[32:36])[0]
 
-        state = struct.unpack('<h', data[36:38])[0]
-        mode = struct.unpack('<h', data[38:40])[0]
+        current = struct.unpack('<f', data[36:40])[0]
+        current_phantom = struct.unpack('<f', data[40:44])[0]
+
+        state = struct.unpack('<h', data[44:46])[0]
+        mode = struct.unpack('<h', data[46:48])[0]
 
         self.lbl_cpu_load.setText("{:.1f}".format(cpu_load))
 
@@ -96,6 +150,9 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         self.lbl_current_4.setText("{:.1f}".format(current_4))
         self.lbl_current_5.setText("{:.1f}".format(current_5))
         self.lbl_current_6.setText("{:.1f}".format(current_6))
+
+        self.lbl_current.setText("{:.1f}".format(current))
+        self.lbl_current_phantom.setText("{:.1f}".format(current_phantom))
 
         # enum STATE {SM_startup = 0, SM_standby, SM_work, SM_fault_sensed, SM_fault} state;
         if state == 0:
@@ -114,16 +171,22 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
             self.lbl_state.setStyleSheet(COLOR_RED)
             self.lbl_state.setText("Fault")
 
-        # reg_PI = 0, reg_DCC_I, reg_DCC_II
+        # Open loop, Phantom, Normal
         if mode == 0:
             self.lbl_mode.setStyleSheet(COLOR_YELLOW)
             self.lbl_mode.setText("Open loop")
+            self.sld_phantom.setDisabled(True)
+            self.lbl_phantom.setDisabled(True)
         if mode == 1:
             self.lbl_mode.setStyleSheet(COLOR_GREEN)
             self.lbl_mode.setText("Phantom")
+            self.sld_phantom.setEnabled(True)
+            self.lbl_phantom.setEnabled(True)
         if mode == 2:
             self.lbl_mode.setStyleSheet(COLOR_GREEN)
             self.lbl_mode.setText("Normal")
+            self.sld_phantom.setDisabled(True)
+            self.lbl_phantom.setDisabled(True)
 
 
 # glavna funkcija
