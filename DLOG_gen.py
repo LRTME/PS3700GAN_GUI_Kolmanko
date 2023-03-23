@@ -121,8 +121,7 @@ class DLOG_viewer():
         self.app.prescalar_spin.valueChanged.connect(self.prescaler_changed)
         self.app.trigger.currentIndexChanged.connect(self.trigger_changed)
 
-        self.samp_freq = SAMP_FREQ
-        self.app.sampling_freq_line.editingFinished.connect(self.samp_freq_changed)
+        self.samp_freq = 20000
 
         # zahtevam statusne podatke za data logger in generator signalov
         # if com port is open request parameters
@@ -261,7 +260,7 @@ class DLOG_viewer():
 
     def draw_plot(self):
         # naracunam x os
-        dt = self.app.prescalar_spin.value() / self.samp_freq
+        dt = 1.0 / self.samp_freq
         time = np.arange(0, self.app.points_spin.value(), dtype=np.float32) * dt
         self.max_time = time[-1]
 
@@ -313,7 +312,11 @@ class DLOG_viewer():
         send_ch8 = struct.unpack('<h', data[14:16])[0]
         points = struct.unpack('<h', data[16:18])[0]
         prescalar = struct.unpack('<h', data[18:20])[0]
-        trigger = struct.unpack('<h', data[20:22])[0]
+        sampling_freq = struct.unpack('<i', data[20:24])[0]
+        trigger = struct.unpack('<h', data[24:26])[0]
+
+        self.samp_freq = sampling_freq/prescalar
+        self.app.lbl_samp_freq.setText(str(int(self.samp_freq)))
 
         # ustrezno nastavim GUI elemente
         self.app.points_spin.blockSignals(True)
@@ -428,12 +431,6 @@ class DLOG_viewer():
     def trigger_changed(self):
         # posljem paket po portu
         self.app.commonitor.send_packet(0x0922, struct.pack('<h', self.app.trigger.currentIndex()))
-        # zahtevaj se povratni odgovor
-        self.app.commonitor.send_packet(0x092A, None)
-
-    # ob spremembi vzorčen frekvence
-    def samp_freq_changed(self):
-        self.samp_freq = int(self.app.sampling_freq_line.text())
         # zahtevaj se povratni odgovor
         self.app.commonitor.send_packet(0x092A, None)
 
