@@ -16,6 +16,8 @@ COLOR_GREEN = "background-color:#32cd32;"
 COLOR_BRIGHT_RED = "background-color:#FF4646;"
 COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 
+states = [("Startup", COLOR_YELLOW), ("Standby_cold", COLOR_YELLOW), ("Standby_hot", COLOR_YELLOW),
+          ("Work", COLOR_GREEN), ("Fault_sensed", COLOR_RED), ("Fault", COLOR_RED)]
 
 class MainApp(Basic_GUI_main_window.AppMainClass):
 
@@ -96,7 +98,7 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
             # zero the reference values
             self.sld_phantom.setValue(0)
             self.sld_amp.setValue(0)
-        if self.lbl_state.text() == "Standby":
+        if (self.lbl_state.text() == "Standby_cold") or (self.lbl_state.text() == "Standby_hot"):
             # send request to turn off the rectifier
             self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0001))
         if self.lbl_state.text() == "Fault":
@@ -158,21 +160,8 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         self.lbl_current_phantom.setText("{:.1f}".format(current_phantom))
 
         # enum STATE {SM_startup = 0, SM_standby, SM_work, SM_fault_sensed, SM_fault} state;
-        if state == 0:
-            self.lbl_state.setStyleSheet(COLOR_YELLOW)
-            self.lbl_state.setText("Startup")
-        if state == 1:
-            self.lbl_state.setStyleSheet(COLOR_YELLOW)
-            self.lbl_state.setText("Standby")
-        if state == 2:
-            self.lbl_state.setStyleSheet(COLOR_GREEN)
-            self.lbl_state.setText("Work")
-        if state == 3:
-            self.lbl_state.setStyleSheet(COLOR_RED)
-            self.lbl_state.setText("Fault")
-        if state == 4:
-            self.lbl_state.setStyleSheet(COLOR_RED)
-            self.lbl_state.setText("Fault")
+        self.lbl_state.setText(states[state][0])
+        self.lbl_state.setStyleSheet(states[state][1])
 
         # Open loop, Phantom, Normal
         if mode == 0:
