@@ -141,8 +141,11 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         current = struct.unpack('<f', data[36:40])[0]
         current_phantom = struct.unpack('<f', data[40:44])[0]
 
-        state = struct.unpack('<h', data[44:46])[0]
-        mode = struct.unpack('<h', data[46:48])[0]
+        temp_pcb = struct.unpack('<f', data[44:48])[0]
+        temp_cpu = struct.unpack('<f', data[48:52])[0]
+
+        state = struct.unpack('<h', data[52:54])[0]
+        mode = struct.unpack('<h', data[54:56])[0]
 
         self.lbl_cpu_load.setText("{:.1f}".format(cpu_load))
 
@@ -158,6 +161,9 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
 
         self.lbl_current.setText("{:.1f}".format(current))
         self.lbl_current_phantom.setText("{:.1f}".format(current_phantom))
+
+        self.lbl_temp_pcb.setText("{:.1f}".format(temp_pcb))
+        self.lbl_temp_cpu.setText("{:.1f}".format(temp_cpu))
 
         # enum STATE {SM_startup = 0, SM_standby, SM_work, SM_fault_sensed, SM_fault} state;
         self.lbl_state.setText(states[state][0])
