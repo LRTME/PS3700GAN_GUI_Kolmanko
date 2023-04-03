@@ -45,6 +45,17 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         self.sld_phantom.valueChanged[int].connect(self.phantom_changed)
         self.sld_phantom.sliderReleased.connect(self.request_settings)
 
+        # leg checkboxes
+        self.cb_leg1.stateChanged.connect(self.legs_changed)
+        self.cb_leg2.stateChanged.connect(self.legs_changed)
+        self.cb_leg3.stateChanged.connect(self.legs_changed)
+        self.cb_leg4.stateChanged.connect(self.legs_changed)
+        self.cb_leg5.stateChanged.connect(self.legs_changed)
+        self.cb_leg6.stateChanged.connect(self.legs_changed)
+
+        self.le_freq.editingFinished.connect(self.freq_set)
+        self.le_dead_time.editingFinished.connect(self.dead_time_set)
+
         # connect max current line edit
         self.le_amp_norm.editingFinished.connect(self.amplitude_norm_set)
         self.norm_max = 5
@@ -57,6 +68,69 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         else:
             self.commonitor.register_on_open_callback(self.request_state)
             self.commonitor.register_on_open_callback(self.request_settings)
+
+    def disable_modifications(self):
+        self.le_freq.setDisabled(True)
+        self.le_dead_time.setDisabled(True)
+        self.cb_leg1.setDisabled(True)
+        self.cb_leg2.setDisabled(True)
+        self.cb_leg3.setDisabled(True)
+        self.cb_leg4.setDisabled(True)
+        self.cb_leg5.setDisabled(True)
+        self.cb_leg6.setDisabled(True)
+
+    def enable_modifications(self):
+        self.le_freq.setEnabled(True)
+        self.le_dead_time.setEnabled(True)
+        self.cb_leg1.setEnabled(True)
+        self.cb_leg2.setEnabled(True)
+        self.cb_leg3.setEnabled(True)
+        self.cb_leg4.setEnabled(True)
+        self.cb_leg5.setEnabled(True)
+        self.cb_leg6.setEnabled(True)
+
+    def legs_changed(self):
+        num = 0
+        if self.cb_leg1.isChecked():
+            num = num + 1
+        if self.cb_leg2.isChecked():
+            num = num + 2
+        if self.cb_leg3.isChecked():
+            num = num + 4
+        if self.cb_leg4.isChecked():
+            num = num + 8
+        if self.cb_leg5.isChecked():
+            num = num + 16
+        if self.cb_leg6.isChecked():
+            num = num + 32
+        data = struct.pack('<h', num)
+        self.commonitor.send_packet(0x0D08, data)
+
+    def dead_time_set(self):
+        text = self.le_dead_time.text().replace(",", ".")
+        try:
+            num = float(text)
+        except ValueError:
+            num = float(self.norm_max)
+        if num < 5:
+            num = 5
+        if num > 500:
+            num = 500
+        data = struct.pack('<f', num)
+        self.commonitor.send_packet(0x0D07, data)
+
+    def freq_set(self):
+        text = self.le_freq.text().replace(",", ".")
+        try:
+            num = float(text)
+        except ValueError:
+            num = float(self.norm_max)
+        if num < 100000:
+            num = 100000
+        if num > 1000000:
+            num = 1000000
+        data = struct.pack('<f', num)
+        self.commonitor.send_packet(0x0D06, data)
 
     def phantom_changed(self):
         # osvezim napis pod sliderjem
@@ -112,6 +186,10 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         current_norm = round(struct.unpack('<f', data[0:4])[0], 2)
         phantom = round(struct.unpack('<f', data[4:8])[0], 2)
 
+        sw_freq = round(struct.unpack('<f', data[8:12])[0], 2)
+        dead_time = round(struct.unpack('<f', data[12:16])[0], 2)
+        legs = round(struct.unpack('<h', data[16:18])[0], 2)
+
         self.le_amp_norm.blockSignals(True)
         self.le_amp_norm.setText("{:.1f}".format(current_norm))
         self.le_amp_norm.blockSignals(False)
@@ -120,6 +198,38 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         self.sld_phantom.setValue(int(phantom*100))
         self.sld_phantom.blockSignals(False)
         self.lbl_phantom.setText(str(self.sld_phantom.value() / 100))
+
+        self.le_freq.blockSignals(True)
+        self.le_freq.setText("{:.0f}".format(sw_freq))
+        self.le_freq.blockSignals(False)
+
+        self.le_dead_time.blockSignals(True)
+        self.le_dead_time.setText("{:.0f}".format(dead_time))
+        self.le_dead_time.blockSignals(False)
+
+        self.cb_leg1.blockSignals(True)
+        self.cb_leg1.setChecked(legs & 0x01)
+        self.cb_leg1.blockSignals(False)
+
+        self.cb_leg2.blockSignals(True)
+        self.cb_leg2.setChecked(legs & 0x02)
+        self.cb_leg2.blockSignals(False)
+
+        self.cb_leg3.blockSignals(True)
+        self.cb_leg3.setChecked(legs & 0x04)
+        self.cb_leg3.blockSignals(False)
+
+        self.cb_leg4.blockSignals(True)
+        self.cb_leg4.setChecked(legs & 0x08)
+        self.cb_leg4.blockSignals(False)
+
+        self.cb_leg5.blockSignals(True)
+        self.cb_leg5.setChecked(legs & 0x10)
+        self.cb_leg5.blockSignals(False)
+
+        self.cb_leg6.blockSignals(True)
+        self.cb_leg6.setChecked(legs & 0x20)
+        self.cb_leg6.blockSignals(False)
 
     def state_received(self):
         # grab the data
@@ -168,6 +278,11 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         # enum STATE {SM_startup = 0, SM_standby, SM_work, SM_fault_sensed, SM_fault} state;
         self.lbl_state.setText(states[state][0])
         self.lbl_state.setStyleSheet(states[state][1])
+
+        if self.lbl_state.text() == "Standby_cold" or self.lbl_state.text() == "Standby_hot":
+            self.enable_modifications()
+        else:
+            self.disable_modifications()
 
         # Open loop, Phantom, Normal
         if mode == 0:
