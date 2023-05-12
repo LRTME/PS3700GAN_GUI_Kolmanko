@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import struct
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 import threading
 import time
+import numpy as np
 
 COLOR_YELLOW = "background-color:#F8D129;"
 COLOR_RED = "background-color:#c83531;"
@@ -11,8 +12,15 @@ COLOR_BRIGHT_RED = "background-color:#FF4646;"
 COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 
 
-class AUT_measurement():
+class AUT_measurement(QtCore.QObject):
+
+    # for measurement automation
+    finished = QtCore.pyqtSignal()
+    primary_signal = QtCore.pyqtSignal(int)
+    secondary_signal = QtCore.pyqtSignal(int)
+
     def __init__(self, parent):
+        super().__init__(parent)
         self.app = parent
         self.speed_start = 0
         self.speed_stop = 0
@@ -35,9 +43,9 @@ class AUT_measurement():
         self.app.spb_secondary_delay.setMaximum(10)
         self.app.spb_secondary_delay.setValue(0.01)
 
-        self.app.finished.connect(self.measure_end)
-        self.app.primary_signal.connect(self.primary_updated)
-        self.app.secondary_signal.connect(self.secondary_updated)
+        self.finished.connect(self.measure_end)
+        self.primary_signal.connect(self.primary_updated)
+        self.secondary_signal.connect(self.secondary_updated)
 
         self.app.sld_primary.valueChanged[int].connect(self.primary_changed)
         self.app.sld_secondary.valueChanged[int].connect(self.secondary_changed)
@@ -139,7 +147,7 @@ class AUT_measurement():
             # update new value
             data = struct.pack('<f', (primary_actual / 100))
             self.app.commonitor.send_packet(0x0E01, data)
-            self.app.primary_signal.emit(primary_actual)
+            self.primary_signal.emit(primary_actual)
             # wait for things to settle down
             time.sleep(self.primary_delay)
 
@@ -148,7 +156,7 @@ class AUT_measurement():
                 # update new value
                 data = struct.pack('<f', (secondary_actual / 100))
                 self.app.commonitor.send_packet(0x0E02, data)
-                self.app.secondary_signal.emit(secondary_actual)
+                self.secondary_signal.emit(secondary_actual)
                 # wait for things to settle down
                 time.sleep(self.secondary_delay)
 
@@ -176,15 +184,16 @@ class AUT_measurement():
                     # update new value
                     data = struct.pack('<f', (secondary_actual / 100))
                     self.app.commonitor.send_packet(0x0E02, data)
-                    self.app.secondary_signal.emit(secondary_actual)
+                    self.secondary_signal.emit(secondary_actual)
                     # wait for things to settle down
                     time.sleep(self.secondary_delay)
                     secondary_actual = secondary_actual - self.secondary_delta
 
             # prepare for the next iteration
             secondary_actual = self.secondary_start
+            data = struct.pack('<f', (secondary_actual / 100))
             self.app.commonitor.send_packet(0x0E02, data)
-            self.app.secondary_signal.emit(secondary_actual)
+            self.secondary_signal.emit(secondary_actual)
 
             # prep the next value
             primary_actual = primary_actual + self.primary_delta
@@ -196,7 +205,7 @@ class AUT_measurement():
                 # update new value
                 data = struct.pack('<f', (primary_actual / 100))
                 self.app.commonitor.send_packet(0x0E01, data)
-                self.app.primary_signal.emit(primary_actual)
+                self.primary_signal.emit(primary_actual)
                 # wait for things to settle down
                 time.sleep(self.primary_delay)
                 primary_actual = primary_actual - self.primary_delta
@@ -204,6 +213,6 @@ class AUT_measurement():
         primary_actual = self.primary_start
         data = struct.pack('<f', (primary_actual / 100))
         self.app.commonitor.send_packet(0x0E01, data)
-        self.app.primary_signal.emit(primary_actual)
+        self.primary_signal.emit(primary_actual)
         # trigger cleanup, when finished
-        self.app.finished.emit()
+        self.finished.emit()

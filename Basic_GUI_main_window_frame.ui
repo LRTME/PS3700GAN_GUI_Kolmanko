@@ -359,7 +359,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tabWidgetPage1">
        <attribute name="title">
@@ -1636,13 +1636,6 @@
      <widget class="QLabel" name="lbl_phantom">
       <property name="text">
        <string>0.0</string>
-      </property>
-     </widget>
-    </item>
-    <item row="26" column="2">
-     <widget class="QLabel" name="lbl_samp_freq">
-      <property name="text">
-       <string>20000</string>
       </property>
      </widget>
     </item>

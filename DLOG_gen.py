@@ -37,22 +37,22 @@ class DLOG_viewer():
         self.main_plot = self.app.PlotWidget.plotItem
         # configure all eight plots
         two_points = np.array([0.0, 0.0001], dtype="float32")
-        self.plot_ch1 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#a6cee3', width=3))
-        self.app.ch1_chkbox.setStyleSheet("color : #a6cee3;")
-        self.plot_ch2 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#1f78b4', width=3))
-        self.app.ch2_chkbox.setStyleSheet("color : #1f78b4;")
-        self.plot_ch3 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#b2df8a', width=3))
-        self.app.ch3_chkbox.setStyleSheet("color : #b2df8a;")
-        self.plot_ch4 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#33a02c', width=3))
-        self.app.ch4_chkbox.setStyleSheet("color : #33a02c;")
-        self.plot_ch5 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#fb9a99', width=3))
-        self.app.ch5_chkbox.setStyleSheet("color : #fb9a99;")
-        self.plot_ch6 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#e31a1c', width=3))
-        self.app.ch6_chkbox.setStyleSheet("color : #e31a1c;")
-        self.plot_ch7 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#fdbf6f', width=3))
-        self.app.ch7_chkbox.setStyleSheet("color : #fdbf6f;")
-        self.plot_ch8 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#ff7f00', width=3))
-        self.app.ch8_chkbox.setStyleSheet("color : #ff7f00;")
+        self.plot_ch1 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#1f78b4', width=3))
+        self.app.ch1_chkbox.setStyleSheet("color : #1f78b4;")
+        self.plot_ch2 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#33a02c', width=3))
+        self.app.ch2_chkbox.setStyleSheet("color : #33a02c;")
+        self.plot_ch3 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#e31a1c', width=3))
+        self.app.ch3_chkbox.setStyleSheet("color : #e31a1c;")
+        self.plot_ch4 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#ff7f00', width=3))
+        self.app.ch4_chkbox.setStyleSheet("color : #ff7f00;")
+        self.plot_ch5 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#a6cee3', width=3))
+        self.app.ch5_chkbox.setStyleSheet("color : #a6cee3;")
+        self.plot_ch6 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#b2df8a', width=3))
+        self.app.ch6_chkbox.setStyleSheet("color : #b2df8a;")
+        self.plot_ch7 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#fb9a99', width=3))
+        self.app.ch7_chkbox.setStyleSheet("color : #fb9a99;")
+        self.plot_ch8 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#fdbf6f', width=3))
+        self.app.ch8_chkbox.setStyleSheet("color : #fdbf6f;")
         # '#cab2d6' '#6a3d9a' '#ffff99' '#b15928'
         # initially hide them all
         self.plot_ch1.hide()
@@ -70,7 +70,6 @@ class DLOG_viewer():
         self.main_plot.vb.autoRange(items=[self.plot_ch1, self.plot_ch2, self.plot_ch3, self.plot_ch4,
                                            self.plot_ch5, self.plot_ch6, self.plot_ch7, self.plot_ch8])
         self.mouse_point = QtCore.QPoint(0, 0)
-
 
         # Add crosshair lines with text
         self.max_time = 0.0001
@@ -96,7 +95,7 @@ class DLOG_viewer():
         self.app.commonitor.connect_rx_handler(0x0907, self.on_received_ch7)
         self.app.commonitor.connect_rx_handler(0x0908, self.on_received_ch8)
 
-        self.app.commonitor.connect_rx_handler(0x090A, self.on_dlog_params_received)
+        self.app.commonitor.connect_rx_handler(0x0910, self.on_dlog_params_received)
 
         # connect chanel select checkbox
         self.app.ch1_chkbox.stateChanged.connect(self.ch1_state_changed)
@@ -113,7 +112,7 @@ class DLOG_viewer():
         # connect dlog items
         self.app.points_spin.setOpts(value=200, dec=True, step=1, minStep=1, int=True)
         self.app.points_spin.setMinimum(10)
-        self.app.points_spin.setMaximum(1000)
+        self.app.points_spin.setMaximum(10000)
         self.app.points_spin.valueChanged.connect(self.points_changed)
         self.app.prescalar_spin.setOpts(value=1, dec=True, step=1, minStep=1, int=True)
         self.app.prescalar_spin.setMinimum(1)

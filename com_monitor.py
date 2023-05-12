@@ -275,6 +275,11 @@ class ComMonitor(QtCore.QObject, serial.threaded.Packetizer):
         return self.tx_queue.qsize()
 
     def connect_rx_handler(self, code, rx_function):
+        # preveri, ce je handler z isto kodo že registriran
+        for existing_code in self.rx_code_list:
+            if existing_code == code:
+                raise Exception("handler with same code has alredy been registered")
+
         # naredim novega workerja, ki ga povezem z funkcijo
         rx_worker = RxWorker(rx_function)
         # in ga dam na seznam registriranih handlerjev

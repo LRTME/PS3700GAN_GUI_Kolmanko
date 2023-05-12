@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
+# splash screen for pyinstaller
+import sys
+splash_text = "Basic_GUI, Mitja Nemec\n"
+if getattr(sys, 'frozen', False):
+    import pyi_splash
+    pyi_splash.update_text(splash_text + "Importing modules")
+
 import struct
 import Basic_GUI_main_window
 import os
-import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
 # za samo eno instanco applikacije
 import singleton
-import numpy as np
 
 SERIAL_NUMBER = 'TI0JAY8S'
 
@@ -21,12 +26,10 @@ states = [("Startup", COLOR_YELLOW), ("Standby_cold", COLOR_YELLOW), ("Standby_h
 
 class MainApp(Basic_GUI_main_window.AppMainClass):
 
-    # for measurement automation
-    finished = QtCore.pyqtSignal()
-    primary_signal = QtCore.pyqtSignal(int)
-    secondary_signal = QtCore.pyqtSignal(int)
-
     def __init__(self, parent=None):
+        if getattr(sys, 'frozen', False):
+            pyi_splash.update_text(splash_text + "Building GUI")
+
         super().__init__(SERIAL_NUMBER)
         self.setWindowTitle("PS3700GAN_GUI")
         self.about_dialog.lbl_description.setText(self.windowTitle())
@@ -62,6 +65,8 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
 
         # zahtevam statusne podatke za data logger in generator signalov
         # if com port is open request parameters
+        if getattr(sys, 'frozen', False):
+            pyi_splash.update_text(splash_text + "Trying to open COM port")
         if self.commonitor.is_port_open():
             self.request_state()
             self.request_settings()
@@ -321,15 +326,24 @@ def main():
     try:
         me = singleton.SingleInstance()
     except singleton.SingleInstanceException:
+        if getattr(sys, 'frozen', False):
+            pyi_splash.close()
         # tukaj bi lahko pokazal vsaj kaksno okno
         w = QtWidgets.QWidget()
         QtWidgets.QMessageBox.about(w, "Napaka", "Naenkrat se lahko izvaja samo ena instanca programa")
+        w.setWindowFlags(w.windowFlags() | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
+        w.show()
+        w.setWindowFlags(w.windowFlags() | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
         w.show()
         sys.exit(0)
 
     form = MainApp()
     # Show the form
     form.show()
+
+    if getattr(sys, 'frozen', False):
+        pyi_splash.close()
+
     # and execute the app
     app.exec_()
 
