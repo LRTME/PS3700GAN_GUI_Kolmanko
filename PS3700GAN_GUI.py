@@ -2,7 +2,7 @@
 # splash screen for pyinstaller
 import sys
 splash_text = "Basic_GUI, Mitja Nemec\n"
-if getattr(sys, 'frozen', False):
+if hasattr(sys, 'frozen'):
     import pyi_splash
     pyi_splash.update_text(splash_text + "Importing modules")
 
