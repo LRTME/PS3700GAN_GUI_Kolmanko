@@ -52,6 +52,7 @@ class AUT_measurement(QtCore.QObject):
 
         self.app.btn_start_measure.clicked.connect(self.measure_start)
 
+    # komunikacija ob spremembi vrednosti
     def primary_changed(self):
         self.app.lbl_primary.setText(str(self.app.sld_primary.value() / 100))
         self.app.commonitor.send_packet(0x0E01, struct.pack('<f', float(self.app.sld_primary.value() / 100)))
@@ -72,6 +73,7 @@ class AUT_measurement(QtCore.QObject):
         self.app.sld_secondary.setValue(value)
         self.app.sld_secondary.blockSignals(True)
 
+    # ko uporabnik pritisne na gumb, da bi zagnal meritev
     def measure_start(self):
         # parse the test boundary conditions
         self.primary_start = int(self.app.spb_primary_start.value() * 100)
@@ -130,11 +132,26 @@ class AUT_measurement(QtCore.QObject):
         self.thread.start()
         pass
 
-        # cleanup after the measurements
-
     def measure_end(self):
         self.app.btn_start_measure.setEnabled(True)
         self.app.sld_amp.setValue(0)
+
+    def named_parameters(self, name=None, ip=None, serial=None):
+        if name:
+            # zrihtaj listo resourcev in poglej če je ta na listi
+            pass
+        if ip:
+            # poglej če je IP veljaven in če je se poveži nanj
+            pass
+        if serial:
+            # zrihaj listo resourcev in se poveži na vsakega
+            # pri vsakem poglje če je serial v IDN?
+            # če je serial ta prav, potem štima če ne se pa odvežeš
+            pass
+
+    def test_named_parameters(self):
+        self.named_parameters(name="ime")
+        self.named_parameters(ip='212')
 
     # measurement thread
     def run_measurements(self):
@@ -160,20 +177,28 @@ class AUT_measurement(QtCore.QObject):
                 # wait for things to settle down
                 time.sleep(self.secondary_delay)
 
-                # grab measured data
+                """ grab measured data """
                 # get the longest array
                 arraylist = [self.app.dlog_gen.ch1_latest, self.app.dlog_gen.ch2_latest, self.app.dlog_gen.ch3_latest,
                              self.app.dlog_gen.ch4_latest, self.app.dlog_gen.ch5_latest, self.app.dlog_gen.ch6_latest,
                              self.app.dlog_gen.ch7_latest, self.app.dlog_gen.ch8_latest]
+
+                scalar_value = float(self.app.lbl_current.text())
+
+                # TODO if required zero the secondary and send it to MCU
+
                 # define empty array
+                """ prepare measured date for saving """
                 array_to_write = np.ones((np.max([len(ps) for ps in arraylist]), len(arraylist))) * np.nan
                 for i, c in enumerate(arraylist):  # populate columns
                     array_to_write[:len(c), i] = c
 
-                # save measured data
+                """ save measured data """
                 filename_actual = self.filename_base + "_" + str(primary_actual) + "_" + str(
                     secondary_actual) + "." + self.filename_ext
                 np.savetxt(filename_actual, array_to_write, delimiter=";")
+
+
                 # prep the next value of current
                 secondary_actual = secondary_actual + self.secondary_delta
 
