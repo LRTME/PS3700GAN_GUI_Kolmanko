@@ -4,6 +4,11 @@ from PyQt5 import QtWidgets, QtCore
 import threading
 import time
 import numpy as np
+import DS1000Z
+import IT9121
+import IT6000C
+import MSO7034A
+import PPA5500
 
 COLOR_YELLOW = "background-color:#F8D129;"
 COLOR_RED = "background-color:#c83531;"
@@ -11,6 +16,9 @@ COLOR_GREEN = "background-color:#32cd32;"
 COLOR_BRIGHT_RED = "background-color:#FF4646;"
 COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 
+"""
+TODO CODE HERE!!
+"""
 
 class AUT_measurement(QtCore.QObject):
 
@@ -88,6 +96,9 @@ class AUT_measurement(QtCore.QObject):
         self.secondary_delay = self.app.spb_secondary_delay.value()
         self.secondary_unroll = self.app.cb_secondary_unroll.isChecked()
 
+        # run connections
+        self.connections()
+
         # run the measurements only if setup is sane
         if self.primary_stop < self.primary_start:
             self.app.spb_primary_start.setStyleSheet(COLOR_BRIGHT_RED)
@@ -136,6 +147,9 @@ class AUT_measurement(QtCore.QObject):
         self.app.btn_start_measure.setEnabled(True)
         self.app.sld_amp.setValue(0)
 
+    """
+    $
+
     def named_parameters(self, name=None, ip=None, serial=None):
         if name:
             # zrihtaj listo resourcev in poglej če je ta na listi
@@ -152,6 +166,17 @@ class AUT_measurement(QtCore.QObject):
     def test_named_parameters(self):
         self.named_parameters(name="ime")
         self.named_parameters(ip='212')
+    
+    """
+    def connections(self):
+        Rigol_DS1000Z = DS1000Z.DS1000Z(ip_or_name = 'DS1104Z') # DS1000Z Can accept ip or name
+        ITech_IT6000C = IT6000C.IT6000C(ip_or_name = 'IT6010C') # IT6000C Can accept ip or name
+
+        # IT9121 can accept only ip. It has a preset port of '30000' and it only works on it. socket specifies
+        # to pyvisa to use .SOCKET instead of .INSTR. .SOCKET accepts ip & port while .INSTR only accepts ip
+        ITech_IT9121_1 = IT9121.IT9121(ip_or_name = '212...')
+        ITech_IT9121_2 = IT9121.IT9121(ip_or_name = '212...')
+
 
     # measurement thread
     def run_measurements(self):
