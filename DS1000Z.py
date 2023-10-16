@@ -119,6 +119,9 @@ class DS1000Z:
 
         return self.addr.query("TRIGger:STATus?")
 
+    def trigger(self):
+        self.addr.write(":TRIGger:IMM")
+
     def get_measurement(self, item = "VMAX", type="CURR", channel=1):
         """
         get desired measurement.

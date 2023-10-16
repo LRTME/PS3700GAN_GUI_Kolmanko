@@ -40,7 +40,7 @@ class IT9121:
 
         return self.addr.query("MEAS:HARM:VOLT:THD?")
 
-    def get_base_source_current(self, voltage = "DC"):
+    def get_base_source_current(self, current = "DC"):
 
         assert voltage in ["AC", "DC"]
         if voltage == "DC":
@@ -178,6 +178,9 @@ class IT9121:
     def get_trigger_mode(self):
 
         return self.addr.query("WAVE:TRIG:MODE?")
+
+    def trigger(self):
+        self.addr.write("TRIGger:IMMediate")
 
     def get_waveform_voltage(self):
 

@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets, QtCore
 import threading
 import time
 import numpy as np
+import csv
 import DS1000Z
 import IT9121
 import IT6000C
@@ -16,9 +17,6 @@ COLOR_GREEN = "background-color:#32cd32;"
 COLOR_BRIGHT_RED = "background-color:#FF4646;"
 COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 
-"""
-TODO CODE HERE!!
-"""
 
 class AUT_measurement(QtCore.QObject):
 
@@ -210,6 +208,34 @@ class AUT_measurement(QtCore.QObject):
 
                 scalar_value = float(self.app.lbl_current.text())
 
+                # Set IT6000C voltage [20, 36, 48] and current [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] in 2 for loops
+                # when voltage & current are set, wait for a second or two for values to normalize
+                self.ITech_IT6000C.set_output_voltage(voltage = primary_actual)
+                self.ITech_IT6000C.set_output_current(current = secondary_actual)
+                time.sleep(2)
+
+                # set RIGOL autoscale
+                # wait for autoscale to complete
+                self.Rigol_DS1000Z.autoscale_and_auto_offset(channel = 1)
+                time.sleep(2)
+
+                self.Rigol_DS1000Z.trigger()
+                self.ITech_IT9121_1.trigger()
+                self.ITech_IT9121_2.trigger()
+                time.sleep(self.secondary_delay)
+
+                """
+                STEPS:
+                1.) Set IT6000C voltage [20, 36, 48] and current [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] in 2 for loops
+                2.) when voltage & current are set, wait for a second or two for values to normalize
+                3.) set RIGOL autoscale
+                4.) wait for autoscale to complete
+                5.) trigger RIGOL & IT9121s
+                6.) capture RIGOL waveform and IT9121 current, voltage and power
+                7.) save RIGOL waveform to .csv file and IT9121 data to seperate .csv file
+                8.) trigger next loop
+                """
+
                 # TODO if required zero the secondary and send it to MCU
 
                 # define empty array
@@ -219,10 +245,25 @@ class AUT_measurement(QtCore.QObject):
                     array_to_write[:len(c), i] = c
 
                 """ save measured data """
+                rigol_values = []
+                rigol_time = []
+
+                rigol_values, rigol_time = self.self.Rigol_DS1000Z.capture_waveform(channel = 1)
+                ITech_1_voltage = self.ITech_IT9121_1.get_base_source_voltage(voltage = 'DC')
+                ITech_1_current = self.ITech_IT9121_1.get_base_source_current(current ='DC')
+                ITech_2_voltage = self.ITech_IT9121_2.get_base_source_voltage(voltage='DC')
+                ITech_2_current = self.ITech_IT9121_2.get_base_source_current(current='DC')
+
+                array_to_write = rigol_values,\
+                    rigol_time,\
+                    ITech_1_voltage,\
+                    ITech_1_current,\
+                    ITech_2_voltage,\
+                    ITech_2_current
+
                 filename_actual = self.filename_base + "_" + str(primary_actual) + "_" + str(
                     secondary_actual) + "." + self.filename_ext
                 np.savetxt(filename_actual, array_to_write, delimiter=";")
-
 
                 # prep the next value of current
                 secondary_actual = secondary_actual + self.secondary_delta
