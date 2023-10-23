@@ -179,8 +179,10 @@ class IT9121:
 
         return self.addr.query("WAVE:TRIG:MODE?")
 
-    def trigger(self):
-        self.addr.write("TRIGger:IMMediate")
+    def trigger(self, trigger_mode = 'OFF'):
+
+        assert trigger_mode in [0, 1, 'OFF', 'ON']
+        self.addr.write("HOLD {0}".format(trigger_mode))
 
     def get_waveform_voltage(self):
 

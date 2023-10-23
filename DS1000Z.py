@@ -43,6 +43,18 @@ class DS1000Z:
         # Acquire identification
         return self.addr.query('*IDN?')
 
+    def run(self):
+        """
+        sets the oscilloscope to 'RUN' mode
+        """
+        self.addr.write(':RUN')
+
+    def stop(self):
+        """
+        sets oscilloscope to 'STOP' mode
+        """
+        self.addr.write(":STOP")
+
     def get_vertical_scale(self, channel = 1):
         """
         acquire vertical scale for specified channel
