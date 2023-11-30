@@ -3,13 +3,9 @@
 from PyQt5 import QtWidgets, QtGui
 # We need sys so that we can pass argv to QApplication
 import sys
-# for serial communication
 import com_monitor
-# for data packing and unpacking
 import struct
-# just for rounding functions (data conversion)
 import math
-# za slike
 import os
 
 # GUI GUI elements
@@ -59,7 +55,7 @@ class AppMainClass(QtWidgets.QMainWindow, Basic_GUI_main_window_frame.Ui_MainWin
         # LOG
         self.com_log_dialog = LOG_mod.Logger(self)
 
-        # pripravim dialoga
+        # set up the dialogs
         self.com_stat_dialog = Basic_GUI_COM_statistics.ComStat(self)
         self.com_dialog = Basic_GUI_COM_settings.ComDialog(self)
         self.com_dialog.try_connect_at_startup(serial_number)
@@ -74,13 +70,11 @@ class AppMainClass(QtWidgets.QMainWindow, Basic_GUI_main_window_frame.Ui_MainWin
         # automatic measurements
         self.aut_measure = AUT_measure.AUT_measurement(self)
 
-    # ko zaprem aplikacijo za ziher zaprem comport
+    # make sure to close the port on app close
     def closeEvent(self, event):
-        # ce je port se odprt, potem sprostim kontrolo
         if self.commonitor.is_port_open():
-            # preden ga zaprem, moram samo poskrbeti, da port ni uporabljen v threadih
             self.commonitor.close_port()
-        # klicem sistemski handler
+        # close the app
         super(AppMainClass, self).closeEvent(event)
 
     """ rx packets handlesr - in GUI thread"""

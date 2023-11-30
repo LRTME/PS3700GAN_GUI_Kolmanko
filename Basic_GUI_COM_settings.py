@@ -86,8 +86,14 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
         self.com_select.activated.connect(self.port_clicked)
 
         # ustvarim timer za periodicno povprasevanje
+        self.sent_ping_count = 0
+        self.received_ping_count = 0
+        self.ping_acq = False
+        self.quiet_mode = True
+        self.app.commonitor.connect_rx_handler(0x0900, self.received_ping)
         self.periodic_timer = QtCore.QTimer()
-        self.periodic_timer.timeout.connect(self.periodic_query)
+        self.periodic_timer.timeout.connect(self.send_ping)
+
 
     # osvezim seznam com portov
     def refresh_ports(self):
@@ -187,11 +193,19 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
 
     # nov thread, ki periodično pošlje zahtevo po svežih podatkih
     # ce je port odprt. Sicer ustavi sam sebe
-    def periodic_query(self):
+    def send_ping(self):
         if self.app.commonitor.is_port_open():
+            if self.ping_acq is False:
+                self.quiet_mode = True
+            self.ping_acq = False
             self.app.commonitor.send_packet(0x0900, None)
+            self.sent_ping_count = self.sent_ping_count + 1
         else:
             self.periodic_timer.stop()
+
+    def received_ping(self):
+        self.received_ping_count = self.received_ping_count + 1
+        self.ping_acq = True
 
     # ob zagonu skušam odpreti port
     def try_connect_at_startup(self, serial_number=None):
@@ -212,7 +226,7 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
             if uart_port in list_portov:
                 preffered_port = uart_port
             else:
-                preffered_port = self.app.commonitor.get_prefered_port(serial=serial_number)
+                preffered_port = self.app.commonitor.get_prefered_port(portname=serial_number)
             # in ce je naprava priklopljena
             if preffered_port != None:
                 # in ce imam ini datoteko preberem iz nje

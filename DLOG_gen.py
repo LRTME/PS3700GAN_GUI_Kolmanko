@@ -3,13 +3,11 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import math
-# for ploting
 import pyqtgraph as pg
-# for data packing and unpacking
 import struct
 import numpy as np
 
-# for timescale of the plot
+# default sampling frequency
 SAMP_FREQ = 20000
 
 
@@ -53,7 +51,7 @@ class DLOG_viewer():
         self.app.ch7_chkbox.setStyleSheet("color : #fb9a99;")
         self.plot_ch8 = self.main_plot.plot(two_points, two_points, pen=pg.mkPen('#fdbf6f', width=3))
         self.app.ch8_chkbox.setStyleSheet("color : #fdbf6f;")
-        # '#cab2d6' '#6a3d9a' '#ffff99' '#b15928'
+        # for 12 ch extension '#cab2d6' '#6a3d9a' '#ffff99' '#b15928'
         # initially hide them all
         self.plot_ch1.hide()
         self.plot_ch2.hide()
@@ -138,6 +136,7 @@ class DLOG_viewer():
             self.crosshair_v.hide()
             self.crosshair_h.hide()
             self.crosshair_text.hide()
+            self.main_plot.setCursor(QtCore.Qt.CursorShape.CrossCursor)
 
     def update_crosshair(self, e):
         if self.app.cb_cursor.isChecked():
@@ -147,7 +146,7 @@ class DLOG_viewer():
                 view_range = self.main_plot.vb.viewRange()
                 # the cursor should stay within data range to avoid panning
                 point_x = mouse_point.x()
-                cursor = QtCore.Qt.CursorShape.BlankCursor
+                cursor = QtCore.Qt.CursorShape.CrossCursor
                 if mouse_point.x() < 0:
                     point_x = 0
                     cursor = QtCore.Qt.CursorShape.ArrowCursor
@@ -174,9 +173,9 @@ class DLOG_viewer():
                 self.crosshair_text.setPos(point_x, point_y)
 
     def on_received_ch1(self):
-        # potegnem ven podatke direktno v np.array
+        # get data into np.array
         self.ch1_latest = np.frombuffer(self.app.commonitor.get_data(), dtype=np.float32)
-        # in klicem izris grafa ce je treba izrisati samo ch1
+        # only ch1 to plot
         if (self.app.ch1_chkbox.isChecked() and
                 not self.app.ch2_chkbox.isChecked() and
                 not self.app.ch3_chkbox.isChecked() and
@@ -188,9 +187,9 @@ class DLOG_viewer():
             self.draw_plot()
 
     def on_received_ch2(self):
-        # potegnem ven podatke direktno v np.array
+        # get data into np.array
         self.ch2_latest = np.frombuffer(self.app.commonitor.get_data(), dtype=np.float32)
-        # in klicem izris grafa ce je treba izrisati samo ch2
+        # no additional plots to grab
         if (self.app.ch2_chkbox.isChecked() and
                 not self.app.ch3_chkbox.isChecked() and
                 not self.app.ch4_chkbox.isChecked() and
@@ -201,9 +200,9 @@ class DLOG_viewer():
             self.draw_plot()
 
     def on_received_ch3(self):
-        # potegnem ven podatke direktno v np.array
+        # get data into np.array
         self.ch3_latest = np.frombuffer(self.app.commonitor.get_data(), dtype=np.float32)
-        # in klicem izris grafa ce je treba izrisati samo ch3
+        # no additional plots to grab
         if (self.app.ch3_chkbox.isChecked() and
                 not self.app.ch4_chkbox.isChecked() and
                 not self.app.ch5_chkbox.isChecked() and
@@ -213,9 +212,9 @@ class DLOG_viewer():
             self.draw_plot()
 
     def on_received_ch4(self):
-        # potegnem ven podatke direktno v np.array
+        # get data into np.array
         self.ch4_latest = np.frombuffer(self.app.commonitor.get_data(), dtype=np.float32)
-        # in klicem izris grafa ce je treba izrisati samo ch4
+        # no additional plots to grab
         if (self.app.ch4_chkbox.isChecked() and
                 not self.app.ch5_chkbox.isChecked() and
                 not self.app.ch6_chkbox.isChecked() and
@@ -224,9 +223,9 @@ class DLOG_viewer():
             self.draw_plot()
 
     def on_received_ch5(self):
-        # potegnem ven podatke direktno v np.array
+        # get data into np.array
         self.ch5_latest = np.frombuffer(self.app.commonitor.get_data(), dtype=np.float32)
-        # in klicem izris grafa ce je treba izrisati samo ch5
+        # no additional plots to grab
         if (self.app.ch5_chkbox.isChecked() and
                 not self.app.ch6_chkbox.isChecked() and
                 not self.app.ch7_chkbox.isChecked() and
@@ -234,36 +233,36 @@ class DLOG_viewer():
             self.draw_plot()
 
     def on_received_ch6(self):
-        # potegnem ven podatke direktno v np.array
+        # get data into np.array
         self.ch6_latest = np.frombuffer(self.app.commonitor.get_data(), dtype=np.float32)
-        # in klicem izris grafa ce je treba izrisati samo ch6
+        # no additional plots to grab
         if (self.app.ch6_chkbox.isChecked() and
                 not self.app.ch7_chkbox.isChecked() and
                 not self.app.ch8_chkbox.isChecked()):
             self.draw_plot()
 
     def on_received_ch7(self):
-        # potegnem ven podatke direktno v np.array
+        # get data into np.array
         self.ch7_latest = np.frombuffer(self.app.commonitor.get_data(), dtype=np.float32)
-        # in klicem izris grafa ce je treba izrisati samo ch7
+        # no additional plots to grab
         if (self.app.ch7_chkbox.isChecked() and
                 not self.app.ch8_chkbox.isChecked()):
             self.draw_plot()
 
     def on_received_ch8(self):
-        # potegnem ven podatke direktno v np.array
+        # get data into np.array
         self.ch8_latest = np.frombuffer(self.app.commonitor.get_data(), dtype=np.float32)
-        # in klicem izris grafa ce je treba izrisati samo ch1
+        # no additional plots to grab
         if self.app.ch8_chkbox.isChecked():
             self.draw_plot()
 
     def draw_plot(self):
-        # naracunam x os
+        # calculate the x axis
         dt = 1.0 / self.samp_freq
         time = np.arange(0, self.app.points_spin.value(), dtype=np.float32) * dt
         self.max_time = time[-1]
 
-        # graf narisem samo ce sem v normal ali signle mode nacinu
+        # plot only in Normal or Single mode
         if self.app.trigger_mode.currentText() == "Normal" or self.app.trigger_mode.currentText() == "Single":
             if self.app.ch1_chkbox.isChecked():
                 if self.ch1_latest.size == time.size:
@@ -290,17 +289,17 @@ class DLOG_viewer():
                 if self.ch8_latest.size == time.size:
                     self.plot_ch8.setData(time, self.ch8_latest)
 
-            # ce sem v single mode nacinu potem grem v stop mode
+            # When in single mode, after plotting got to stop state
             if self.app.trigger_mode.currentText() == "Single":
                 self.app.trigger_mode.blockSignals(True)
                 self.app.trigger_mode.setCurrentIndex(2)
                 self.app.trigger_mode.blockSignals(False)
 
     def on_dlog_params_received(self):
-        # potegnem ven podatke
+        # grab data
         data = self.app.commonitor.get_data()
 
-        # sedaj pa odkodiram podatke
+        # parse the packet data
         send_ch1 = struct.unpack('<h', data[0:2])[0]
         send_ch2 = struct.unpack('<h', data[2:4])[0]
         send_ch3 = struct.unpack('<h', data[4:6])[0]
@@ -317,7 +316,7 @@ class DLOG_viewer():
         self.samp_freq = sampling_freq/prescalar
         self.app.lbl_samp_freq.setText(str(int(self.samp_freq)))
 
-        # ustrezno nastavim GUI elemente
+        # update the GUI widgets
         self.app.points_spin.blockSignals(True)
         self.app.points_spin.setValue(points)
         self.app.points_spin.blockSignals(False)
@@ -410,27 +409,25 @@ class DLOG_viewer():
         self.app.trigger.setCurrentIndex(trigger)
         self.app.trigger.blockSignals(False)
 
-    # ob spremembi prescalerja
     def prescaler_changed(self):
-        # posljem paket po portu
+        # send packet
         data = struct.pack('<h', self.app.prescalar_spin.value())
         self.app.commonitor.send_packet(0x0920, data)
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
-    # ob spremembi stevila tock
     def points_changed(self):
-        # posljem paket po portu
+        # send packet
         data = struct.pack('<h', int(self.app.points_spin.value()))
         self.app.commonitor.send_packet(0x0921, data)
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
     # ob spremembi triggerja
     def trigger_changed(self):
-        # posljem paket po portu
+        # send packet
         self.app.commonitor.send_packet(0x0922, struct.pack('<h', self.app.trigger.currentIndex()))
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
     # ob pritisku na ch 1
@@ -439,7 +436,7 @@ class DLOG_viewer():
             self.app.commonitor.send_packet(0x0911, struct.pack('<h', 0x0001))
         else:
             self.app.commonitor.send_packet(0x0911, struct.pack('<h', 0x0000))
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
     # ob pritisku na ch 2
@@ -448,7 +445,7 @@ class DLOG_viewer():
             self.app.commonitor.send_packet(0x0912, struct.pack('<h', 0x0001))
         else:
             self.app.commonitor.send_packet(0x0912, struct.pack('<h', 0x0000))
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
     # ob pritisku na ch 3
@@ -457,7 +454,7 @@ class DLOG_viewer():
             self.app.commonitor.send_packet(0x0913, struct.pack('<h', 0x0001))
         else:
             self.app.commonitor.send_packet(0x0913, struct.pack('<h', 0x0000))
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
     # ob pritisku na ch 4
@@ -466,7 +463,7 @@ class DLOG_viewer():
             self.app.commonitor.send_packet(0x0914, struct.pack('<h', 0x0001))
         else:
             self.app.commonitor.send_packet(0x0914, struct.pack('<h', 0x0000))
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
     # ob pritisku na ch 5
@@ -475,7 +472,7 @@ class DLOG_viewer():
             self.app.commonitor.send_packet(0x0915, struct.pack('<h', 0x0001))
         else:
             self.app.commonitor.send_packet(0x0915, struct.pack('<h', 0x0000))
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
     # ob pritisku na ch 6
@@ -484,7 +481,7 @@ class DLOG_viewer():
             self.app.commonitor.send_packet(0x0916, struct.pack('<h', 0x0001))
         else:
             self.app.commonitor.send_packet(0x0916, struct.pack('<h', 0x0000))
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
     # ob pritisku na ch 7
@@ -493,7 +490,7 @@ class DLOG_viewer():
             self.app.commonitor.send_packet(0x0917, struct.pack('<h', 0x0001))
         else:
             self.app.commonitor.send_packet(0x0917, struct.pack('<h', 0x0000))
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
     # ob pritisku na ch 8
@@ -502,11 +499,12 @@ class DLOG_viewer():
             self.app.commonitor.send_packet(0x0918, struct.pack('<h', 0x0001))
         else:
             self.app.commonitor.send_packet(0x0918, struct.pack('<h', 0x0000))
-        # zahtevaj se povratni odgovor
+        # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
     def req_dlog_params(self):
         self.app.commonitor.send_packet(0x092A, None)
+
 
 def eng_string(x, format='%s', si=False):
     """
