@@ -64,6 +64,7 @@ class AUT_measurement(QtCore.QObject):
         self.app.sld_secondary.valueChanged[int].connect(self.secondary_changed)
 
         self.app.btn_start_measure.clicked.connect(self.measure_start)
+        self.app.btn_stop_measure.clicked.connect(self.measure_stop)
 
     # komunikacija ob spremembi vrednosti
     def primary_changed(self):
@@ -201,9 +202,13 @@ class AUT_measurement(QtCore.QObject):
         # Block the button until measurements are done
         self.app.btn_start_measure.setEnabled(False)
         # start measurement thread (so that the GUI is not blocked
-        self.thread = threading.Thread(target=self.run_measurements)
+        self.stop_event = threading.Event()
+        self.thread = threading.Thread(target=self.run_measurements, args=(self.stop_event,))
         self.thread.start()
         pass
+
+    def measure_stop(self):
+        self.stop_event.set()
 
     def measure_end(self):
         self.app.btn_start_measure.setEnabled(True)
@@ -211,7 +216,7 @@ class AUT_measurement(QtCore.QObject):
 
 
     # measurement thread
-    def run_measurements(self):
+    def run_measurements(self, stop_event: threading.Event):
         # setup the initial point
         primary_actual = self.primary_start
         secondary_actual = self.secondary_start
@@ -230,6 +235,9 @@ class AUT_measurement(QtCore.QObject):
             self.input_voltage = input_voltage
 
             while primary_actual <= self.primary_stop:
+                # exit if required
+                if stop_event.is_set():
+                    break
                 # update new value
                 data = struct.pack('<f', (primary_actual / 100))
                 self.app.commonitor.send_packet(0x0E01, data)
@@ -240,6 +248,9 @@ class AUT_measurement(QtCore.QObject):
 
                 # iterate over current
                 while secondary_actual <= self.secondary_stop:
+                    # exit if required
+                    if stop_event.is_set():
+                        break
                     # update new value
                     data = struct.pack('<f', (secondary_actual / 100))
                     self.app.commonitor.send_packet(0x0E02, data)
@@ -434,6 +445,9 @@ class AUT_measurement(QtCore.QObject):
             primary_actual = primary_actual - 2 * self.primary_delta
             if self.primary_unroll:
                 while primary_actual > self.primary_start:
+                    # exit if required
+                    if stop_event.is_set():
+                        break
                     # update new value
                     data = struct.pack('<f', (primary_actual / 100))
                     self.app.commonitor.send_packet(0x0E01, data)
