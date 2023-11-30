@@ -63,27 +63,31 @@ class PPA5500:
 
         assert phase in [1, 2, 3, "S", "SUM", "NEUTRAL"]
         answer = self.addr.query("POWER,PHASE{0},VOLTAGE?".format(phase))
-        split = answer.split(",")
-        return split(2)
+        split_data = answer.split(",")
+        returned = split_data[2]
+        return returned
 
     def get_current(self, phase = 1):
         assert phase in [1, 2, 3, "S", "SUM", "NEUTRAL"]
 
         answer = self.addr.query("POWER,PHASE{0},CURRENT?".format(phase))
-        split = answer.split(",")
-        return split(2)
+        split_data = answer.split(",")
+        returned = split_data[2]
+        return returned
 
     def get_power(self, phase = 1):
         assert phase in [1, 2, 3, "S", "SUM", "NEUTRAL"]
         answer = self.addr.query("POWER,PHASE{0},WATTS?".format(phase))
-        split = answer.split(",")
-        return split(2)
+        split_data = answer.split(",")
+        returned = split_data[2]
+        return returned
 
     def get_voltage_rms(self, phase = 1):
         assert phase in [1, 2, 3, "S", "SUM", "NEUTRAL"]
         answer = self.addr.query("VRMS,PHASE{0},RMS?".format(phase))
-        split = answer.split(",")
-        return split(phase)
+        split_data = answer.split(",")
+        returned = split_data[phase]
+        return returned
 
     def get_phase(self, phase = 1):
         """
@@ -94,8 +98,9 @@ class PPA5500:
         """
         assert phase in [1,2,3,"S"]
         answer = self.addr.query("PHASEM,PHASE{0}?".format(phase))
-        split = answer.split(",")
-        return split(5)
+        split_data = answer.split(",")
+        returned = split_data[5]
+        return returned
 
     def get_power_factor(self, phase = 1):
         assert phase in [1, 2, 3, "S", "SUM", "NEUTRAL"]

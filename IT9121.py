@@ -42,8 +42,8 @@ class IT9121:
 
     def get_base_source_current(self, current = "DC"):
 
-        assert voltage in ["AC", "DC"]
-        if voltage == "DC":
+        assert current in ["AC", "DC"]
+        if current == "DC":
             return self.addr.query("MEAS:CURR:DC?")
         else:
             return self.addr.query("MEAS:CURR:AC?")
@@ -201,6 +201,40 @@ class IT9121:
         voltage = self.get_waveform_voltage()
         current = self.get_waveform_current()
         return voltage, current
+
+    def set_ext1_ratio(self, ratio, current, voltage):
+
+        conversion_factor = 1 # ratio set in V/A
+
+        if ratio:
+            if ratio < 0.001 and ratio > 9999.999:
+                return Exception("Given ratio out of range! Provide a ratio within limits 0.001 <= R <= 9999.999!")
+            else:
+                self.addr.write("CURRent:SRATio:EXS1 {0}".format(ratio))
+
+        elif current and voltage:
+            ratio = voltage / (conversion_factor * current)
+            if ratio < 0.001 and ratio > 9999.999:
+                return Exception("Given ratio out of range! Provide a ratio within limits 0.001 <= R <= 9999.999!")
+            else:
+                self.addr.write("CURRent:SRATio:EXS1 {0}".format(ratio))
+    def set_ext2_ratio(self, ratio, current, voltage):
+
+        conversion_factor = 1000 # ratio set in mV/A
+
+        if ratio:
+            if ratio < 0.001 and ratio > 9999.999:
+                return Exception("Given ratio out of range! Provide a ratio within limits 0.001 <= R <= 9999.999!")
+            else:
+                self.addr.write("CURRent:SRATio:EXS2 {0}".format(ratio))
+
+        elif current and voltage:
+            ratio = voltage / (conversion_factor * current)
+            if ratio < 0.001 and ratio > 9999.999:
+                return Exception("Given ratio out of range! Provide a ratio within limits 0.001 <= R <= 9999.999!")
+            else:
+                self.addr.write("CURRent:SRATio:EXS2 {0}".format(ratio))
+
 
     def set_system_remote(self):
         """

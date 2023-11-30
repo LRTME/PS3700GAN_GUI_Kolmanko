@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 import struct
+import sys
+
 from PyQt5 import QtWidgets, QtCore
 import threading
 import time
 import numpy as np
 import csv
+
+from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QPushButton
+
 import DS1000Z
 import IT9121
 import IT6000C
@@ -37,6 +42,8 @@ class AUT_measurement(QtCore.QObject):
         self.current_delta = 0
 
         self.filename_base = ""
+
+        self.itech_watmeter_1_handler = None
 
         # init delay spinboxes
         self.app.spb_primary_delay.setOpts(value=1, dec=True, step=1, minStep=0.01, int=False)
@@ -79,6 +86,26 @@ class AUT_measurement(QtCore.QObject):
         self.app.sld_secondary.setValue(value)
         self.app.sld_secondary.blockSignals(True)
 
+    def connection_error_message_box(self, device_name):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Error during connection establishment with device {0}.".format(device_name))
+        msg.setWindowTitle("Connection Error")
+        msg.setStandardButtons(QMessageBox.Close | QMessageBox.Ok)
+
+        # Add custom button text
+        close_button = msg.button(QMessageBox.Close)
+        close_button.setText("Close")
+
+        continue_button = msg.button(QMessageBox.Ok)
+        continue_button.setText("Continue")
+
+        result = msg.exec_()
+
+        if msg.clickedButton() == close_button:
+            return 1
+
+
     # ko uporabnik pritisne na gumb, da bi zagnal meritev
     def measure_start(self):
         # parse the test boundary conditions
@@ -93,7 +120,6 @@ class AUT_measurement(QtCore.QObject):
         self.secondary_delta = int(self.app.spb_secondary_delta.value() * 100)
         self.secondary_delay = self.app.spb_secondary_delay.value()
         self.secondary_unroll = self.app.cb_secondary_unroll.isChecked()
-
 
         # run the measurements only if setup is sane
         if self.primary_stop < self.primary_start:
@@ -132,6 +158,46 @@ class AUT_measurement(QtCore.QObject):
         self.filename_base = initial_filename.split('.')[0]
         self.filename_ext = initial_filename.split('.')[1]
 
+
+        # connect to the measurement equipment
+        # if any instruments fail to connect, raise exception
+        try:
+            self.Rigol_DS1000Z = DS1000Z.DS1000Z(ip_or_name = 'DS1104Z')
+        except ValueError:
+            is_return = self.connection_error_message_box('Rigol DS1000Z')
+            if is_return:
+                return
+
+        try:
+            self.ITech_IT6000C = IT6000C.IT6000C(ip_or_name = 'IT6010C')
+        except ValueError:
+            is_return = self.connection_error_message_box('ITech IT6000C')
+            if is_return:
+                return
+
+        try:
+            self.ITech_IT9121_1 = IT9121.IT9121(ip_or_name = '212.235.184.164')
+        except ValueError:
+            is_return = self.connection_error_message_box('ITech IT9121 (1)')
+            if is_return:
+                return
+
+        try:
+            self.ITech_IT9121_2 = IT9121.IT9121(ip_or_name = '212.235.184.155')
+        except ValueError:
+            is_return = self.connection_error_message_box('ITech IT9121 (2)')
+            if is_return:
+                return
+
+        try:
+            self.KinetiQ_PPA5530 = PPA5500.PPA5500(ip_or_name='212.235.184.182')
+        except ValueError:
+            is_return = self.connection_error_message_box('KinetiQ PPA5530')
+            if is_return:
+                return
+
+
+
         # Block the button until measurements are done
         self.app.btn_start_measure.setEnabled(False)
         # start measurement thread (so that the GUI is not blocked
@@ -143,27 +209,6 @@ class AUT_measurement(QtCore.QObject):
         self.app.btn_start_measure.setEnabled(True)
         self.app.sld_amp.setValue(0)
 
-    """
-    $
-
-    def named_parameters(self, name=None, ip=None, serial=None):
-        if name:
-            # zrihtaj listo resourcev in poglej če je ta na listi
-            pass
-        if ip:
-            # poglej če je IP veljaven in če je se poveži nanj
-            pass
-        if serial:
-            # zrihaj listo resourcev in se poveži na vsakega
-            # pri vsakem poglje če je serial v IDN?
-            # če je serial ta prav, potem štima če ne se pa odvežeš
-            pass
-
-    def test_named_parameters(self):
-        self.named_parameters(name="ime")
-        self.named_parameters(ip='212')
-    
-    """
 
     # measurement thread
     def run_measurements(self):
@@ -171,216 +216,235 @@ class AUT_measurement(QtCore.QObject):
         primary_actual = self.primary_start
         secondary_actual = self.secondary_start
 
-        # connect to instruments
-        Rigol_DS1000Z = DS1000Z.DS1000Z(ip_or_name = 'DS1104Z') # DS1000Z Can accept ip or name
-        ITech_IT6000C = IT6000C.IT6000C(ip_or_name = 'IT6010C') # IT6000C Can accept ip or name
+        self.ITech_IT6000C.set_system_remote()
+        self.ITech_IT6000C.set_output(state = 1)
+        self.ITech_IT6000C.set_system_local()
+        time.sleep(7)
 
-        # IT9121 can accept only ip. It has a preset port of '30000' and it only works on it. socket specifies
-        # to pyvisa to use .SOCKET instead of .INSTR. .SOCKET accepts ip & port while .INSTR only accepts ip
-        ITech_IT9121_1 = IT9121.IT9121(ip_or_name = '212.212.235.211')
-        ITech_IT9121_2 = IT9121.IT9121(ip_or_name = '212.212.235.125')
+        input_voltage_list = [24, 36, 48]
 
-        KinetiQ_PPA5530 = PPA5500.PPA5500(ip_or_name='212.235.184.182')
-
+        self.measurement_number = 1
 
         # iterate over speed
-        while primary_actual <= self.primary_stop:
-            # update new value
-            data = struct.pack('<f', (primary_actual / 100))
-            self.app.commonitor.send_packet(0x0E01, data)
-            self.primary_signal.emit(primary_actual)
-            # wait for things to settle down
-            time.sleep(self.primary_delay)
+        for input_voltage in input_voltage_list:
+            self.input_voltage = input_voltage
 
-            # iterate over current
-            while secondary_actual <= self.secondary_stop:
+            while primary_actual <= self.primary_stop:
                 # update new value
-                data = struct.pack('<f', (secondary_actual / 100))
-                self.app.commonitor.send_packet(0x0E02, data)
-                self.secondary_signal.emit(secondary_actual)
+                data = struct.pack('<f', (primary_actual / 100))
+                self.app.commonitor.send_packet(0x0E01, data)
+                self.primary_signal.emit(primary_actual)
+
                 # wait for things to settle down
-                time.sleep(self.secondary_delay)
+                time.sleep(self.primary_delay)
 
-                # Set IT6000C voltage [20, 36, 48] and current [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] in 2 for loops
-                # when voltage & current are set, wait for a second or two for values to normalize
-                if primary_actual == 0:
-                    ITech_IT6000C.set_output_voltage(voltage = 20)
-                if primary_actual == 0.5:
-                    ITech_IT6000C.set_output_voltage(voltage=36)
-                if primary_actual == 1:
-                    ITech_IT6000C.set_output_voltage(voltage=48)
-
-                ITech_IT6000C.set_output_current(current = secondary_actual*60)
-                time.sleep(1)
-
-                # set RIGOL autoscale
-                # set all measuring instruments to 'RUN'
-                # wait for autoscale to complete
-                Rigol_DS1000Z.set_trigger_mode('SINGLE') # set trigger status to single
-                Rigol_DS1000Z.run() # set oscilloscope to RUN mode
-                Rigol_DS1000Z.autoscale_and_auto_offset(channel=1)
-
-                ITech_IT9121_1.trigger(trigger_mode='OFF')
-                ITech_IT9121_2.trigger(trigger_mode = 'OFF')
-
-                KinetiQ_PPA5530.set_data_hold(hold = 'OFF')
-
-                time.sleep(1)
-
-                Rigol_DS1000Z.trigger()
-                ITech_IT9121_1.trigger(trigger_mode='ON')
-                ITech_IT9121_2.trigger(trigger_mode='ON')
-
-                KinetiQ_PPA5530.set_data_hold(hold = 'ON')
-                time.sleep(1)
-
-                """ grab measured data """
-                rigol_values = []
-                rigol_time = []
-
-                rigol_values, rigol_time = Rigol_DS1000Z.capture_waveform(channel = 1)
-
-                ITech_1_voltage = ITech_IT9121_1.get_base_source_voltage(voltage = 'DC')
-                ITech_1_current = ITech_IT9121_1.get_base_source_current(current ='DC')
-                ITech_2_voltage = ITech_IT9121_2.get_base_source_voltage(voltage='DC')
-                ITech_2_current = ITech_IT9121_2.get_base_source_current(current='DC')
-
-                KinetiQ_PPA5530_voltage_1 = KinetiQ_PPA5530.get_voltage(phase = 1)
-                KinetiQ_PPA5530_voltage_2 = KinetiQ_PPA5530.get_voltage(phase=2)
-                KinetiQ_PPA5530_current_1 = KinetiQ_PPA5530.get_current(phase=1)
-                KinetiQ_PPA5530_current_2 = KinetiQ_PPA5530.get_current(phase=2)
-
-                # get the longest array
-
-                arraylist = [self.app.dlog_gen.ch1_latest, self.app.dlog_gen.ch2_latest, self.app.dlog_gen.ch3_latest,
-                             self.app.dlog_gen.ch4_latest, self.app.dlog_gen.ch5_latest, self.app.dlog_gen.ch6_latest,
-                             self.app.dlog_gen.ch7_latest, self.app.dlog_gen.ch8_latest]
-
-                scalar_value = float(self.app.lbl_current.text())
-
-                arraylist_rigol_plot = [[rigol_values], [rigol_time]]
-
-                scalar_value_itech_1_voltage = float(ITech_1_voltage)
-                scalar_value_itech_1_current = float(ITech_1_current)
-
-                scalar_value_itech_2_voltage = float(ITech_2_voltage)
-                scalar_value_itech_2_current = float(ITech_2_current)
-
-                scalar_value_kinetiq_1_voltage = float(KinetiQ_PPA5530_voltage_1)
-                scalar_value_kinetiq_1_current = float(KinetiQ_PPA5530_current_1)
-
-                scalar_value_kinetiq_2_voltage = float(KinetiQ_PPA5530_voltage_2)
-                scalar_value_kinetiq_2_current = float(KinetiQ_PPA5530_current_2)
-
-
-                """
-                STEPS:
-                1.) Set IT6000C voltage [20, 36, 48] and current [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] in 2 for loops
-                2.) when voltage & current are set, wait for a second or two for values to normalize
-                3.) set RIGOL autoscale
-                4.) wait for autoscale to complete
-                5.) trigger RIGOL & IT9121s
-                6.) capture RIGOL waveform and IT9121 current, voltage and power
-                7.) save RIGOL waveform to .csv file and IT9121 data to seperate .csv file
-                8.) trigger next loop
-                """
-
-                # TODO if required zero the secondary and send it to MCU
-
-                # define empty array
-                """ prepare measured date for saving """
-                array_to_write = np.ones((np.max([len(ps) for ps in arraylist]), len(arraylist))) * np.nan
-                for i, c in enumerate(arraylist):  # populate columns
-                    array_to_write[:len(c), i] = c
-
-                array_to_write_rigol = np.ones((np.max([len(ps) for ps in arraylist_rigol_plot]), len(arraylist_rigol_plot))) * np.nan
-                for i, c in enumerate(arraylist_rigol_plot):  # populate columns
-                    array_to_write_rigol[:len(c), i] = c
-
-                """ save measured data """
-
-                filename_actual = self.filename_base + "_" + str(primary_actual) + "_" + str(
-                    secondary_actual) + "." + self.filename_ext
-                np.savetxt(filename_actual, array_to_write, delimiter=";")
-
-                filename_actual_rigol = self.filename_base + "_rigol_" + str(primary_actual) + "_" + str(
-                    secondary_actual) + "." + self.filename_ext
-                np.savetxt(filename_actual_rigol, array_to_write_rigol, delimiter=";")
-
-                filename_actual_itech_1_voltage = self.filename_base + "_itech_1_voltage_" + str(primary_actual) + "_" + str(
-                    secondary_actual) + "." + self.filename_ext
-                np.savetxt(filename_actual_itech_1_voltage, scalar_value_itech_1_voltage, delimiter=";")
-
-                filename_actual_itech_1_current = self.filename_base + "_itech_1_current_" + str(primary_actual) + "_" + str(
-                    secondary_actual) + "." + self.filename_ext
-                np.savetxt(filename_actual_itech_1_current, scalar_value_itech_1_current, delimiter=";")
-
-                filename_actual_itech_2_voltage = self.filename_base + "_itech_2_voltage_" + str(primary_actual) + "_" + str(
-                    secondary_actual) + "." + self.filename_ext
-                np.savetxt(filename_actual_itech_2_voltage, scalar_value_itech_2_voltage, delimiter=";")
-
-                filename_actual_itech_2_current = self.filename_base + "_itech_2_current_" + str(primary_actual) + "_" + str(
-                    secondary_actual) + "." + self.filename_ext
-                np.savetxt(filename_actual_itech_2_current, scalar_value_itech_2_current, delimiter=";")
-
-                filename_actual_kinetiq_1_voltage = self.filename_base + "_kinetiq_1_voltage_" + str(primary_actual) + "_" + str(
-                    secondary_actual) + "." + self.filename_ext
-                np.savetxt(filename_actual_kinetiq_1_voltage, scalar_value_kinetiq_1_voltage, delimiter=";")
-
-                filename_actual_kinetiq_1_current = self.filename_base + "_kinetiq_1_current_" + str(
-                    primary_actual) + "_" + str(
-                    secondary_actual) + "." + self.filename_ext
-                np.savetxt(filename_actual_kinetiq_1_current, scalar_value_kinetiq_1_current, delimiter=";")
-
-                filename_actual_kinetiq_2_voltage = self.filename_base + "_kinetiq_2_voltage_" + str(
-                    primary_actual) + "_" + str(
-                    secondary_actual) + "." + self.filename_ext
-                np.savetxt(filename_actual_kinetiq_2_voltage, scalar_value_kinetiq_2_voltage, delimiter=";")
-
-                filename_actual_kinetiq_2_current = self.filename_base + "_kinetiq_2_current_" + str(
-                primary_actual) + "_" + str(
-                secondary_actual) + "." + self.filename_ext
-                np.savetxt(filename_actual_kinetiq_2_current, scalar_value_kinetiq_2_current, delimiter=";")
-
-                # prep the next value of current
-                secondary_actual = secondary_actual + self.secondary_delta
-
-            # at the end of sequence, soft unroll - might be conditional
-            secondary_actual = secondary_actual - 2 * self.secondary_delta
-            if self.secondary_unroll:
-                while secondary_actual > self.secondary_start:
+                # iterate over current
+                while secondary_actual <= self.secondary_stop:
                     # update new value
                     data = struct.pack('<f', (secondary_actual / 100))
                     self.app.commonitor.send_packet(0x0E02, data)
                     self.secondary_signal.emit(secondary_actual)
                     # wait for things to settle down
                     time.sleep(self.secondary_delay)
-                    secondary_actual = secondary_actual - self.secondary_delta
 
-            # prepare for the next iteration
-            secondary_actual = self.secondary_start
-            data = struct.pack('<f', (secondary_actual / 100))
-            self.app.commonitor.send_packet(0x0E02, data)
-            self.secondary_signal.emit(secondary_actual)
+                    # Set IT6000C voltage [20, 36, 48] and current [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] in 2 for loops
+                    # when voltage & current are set, wait for a second or two for values to normalize
 
-            # prep the next value
-            primary_actual = primary_actual + self.primary_delta
+                    print("measurement: {0} | voltage: {1} | primary: {2} | secondary: {3}".
+                          format(self.measurement_number,
+                                 self.input_voltage,
+                                 primary_actual,
+                                 secondary_actual))
 
-        # at the end of sequence, soft unroll - might be conditional
-        primary_actual = primary_actual - 2 * self.primary_delta
-        if self.primary_unroll:
-            while primary_actual > self.primary_start:
-                # update new value
-                data = struct.pack('<f', (primary_actual / 100))
-                self.app.commonitor.send_packet(0x0E01, data)
-                self.primary_signal.emit(primary_actual)
-                # wait for things to settle down
-                time.sleep(self.primary_delay)
-                primary_actual = primary_actual - self.primary_delta
+                    self.measurement_number = self.measurement_number + 1
 
-        primary_actual = self.primary_start
-        data = struct.pack('<f', (primary_actual / 100))
-        self.app.commonitor.send_packet(0x0E01, data)
-        self.primary_signal.emit(primary_actual)
-        # trigger cleanup, when finished
-        self.finished.emit()
+                    self.ITech_IT6000C.set_system_remote()
+                    #print("IT6000C Error:",self.ITech_IT6000C.read_error())
+                    #self.ITech_IT6000C.set_output(state = 0)
+
+                    self.ITech_IT6000C.set_output_current(current = secondary_actual)
+                    self.ITech_IT6000C.set_output_voltage(voltage=self.input_voltage)
+                    self.ITech_IT6000C.set_system_local()
+
+                    self.sleep_timer = 0.05
+                    time.sleep(self.sleep_timer)
+                    # self.Rigol_DS1000Z.set_trigger_mode('SING')  # set trigger status to single
+                    self.Rigol_DS1000Z.run()  # set oscilloscope to RUN mode
+                    self.Rigol_DS1000Z.set_memory_depth()
+                    time.sleep(self.sleep_timer)
+                    self.Rigol_DS1000Z.autoscale_and_auto_offset(channel=1)
+
+                    self.ITech_IT9121_1.trigger(trigger_mode='OFF')
+                    self.ITech_IT9121_2.trigger(trigger_mode='OFF')
+
+                    self.KinetiQ_PPA5530.set_data_hold(hold='OFF')
+
+                    #self.ITech_IT6000C.set_system_remote()
+                    #self.ITech_IT6000C.set_output(state = 1)
+                    #self.ITech_IT6000C.set_system_local()
+
+                    time.sleep(self.sleep_timer)
+
+                    self.Rigol_DS1000Z.stop()
+                    self.ITech_IT9121_1.trigger(trigger_mode='ON')
+                    self.ITech_IT9121_2.trigger(trigger_mode='ON')
+
+                    self.KinetiQ_PPA5530.set_data_hold(hold = 'ON')
+                    time.sleep(self.sleep_timer)
+
+
+                    """ grab measured data """
+                    rigol_time, rigol_values = self.Rigol_DS1000Z.capture_waveform(channel = 1,
+                                                                                   number_of_points=1200)
+
+                    ITech_1_voltage = self.ITech_IT9121_1.get_base_source_voltage(voltage = 'DC')
+                    ITech_1_current = self.ITech_IT9121_1.get_base_source_current(current ='DC')
+                    ITech_2_voltage = self.ITech_IT9121_2.get_base_source_voltage(voltage='DC')
+                    ITech_2_current = self.ITech_IT9121_2.get_base_source_current(current='DC')
+
+                    KinetiQ_PPA5530_voltage_1 = self.KinetiQ_PPA5530.get_voltage(phase = 3)
+                    KinetiQ_PPA5530_voltage_2 = self.KinetiQ_PPA5530.get_voltage(phase=1)
+                    KinetiQ_PPA5530_current_1 = self.KinetiQ_PPA5530.get_current(phase=3)
+                    KinetiQ_PPA5530_current_2 = self.KinetiQ_PPA5530.get_current(phase=1)
+
+                    # get the longest array
+
+                    arraylist = [self.app.dlog_gen.ch1_latest, self.app.dlog_gen.ch2_latest, self.app.dlog_gen.ch3_latest,
+                                 self.app.dlog_gen.ch4_latest, self.app.dlog_gen.ch5_latest, self.app.dlog_gen.ch6_latest,
+                                 self.app.dlog_gen.ch7_latest, self.app.dlog_gen.ch8_latest]
+
+                    scalar_value = float(self.app.lbl_current.text())
+
+                    arraylist_rigol_plot = np.array([rigol_values,rigol_time])
+                    arraylist_rigol_plot = arraylist_rigol_plot.T
+
+                    scalar_value_itech_1_voltage = [float(ITech_1_voltage)]
+                    scalar_value_itech_1_current = [float(ITech_1_current)]
+
+                    scalar_value_itech_2_voltage = [float(ITech_2_voltage)]
+                    scalar_value_itech_2_current = [float(ITech_2_current)]
+
+                    scalar_value_kinetiq_1_voltage = [float(KinetiQ_PPA5530_voltage_1)]
+                    scalar_value_kinetiq_1_current = [float(KinetiQ_PPA5530_current_1)]
+
+                    scalar_value_kinetiq_2_voltage = [float(KinetiQ_PPA5530_voltage_2)]
+                    scalar_value_kinetiq_2_current = [float(KinetiQ_PPA5530_current_2)]
+
+
+                    """
+                    STEPS:
+                    1.) Set IT6000C voltage [20, 36, 48] and current [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] in 2 for loops
+                    2.) when voltage & current are set, wait for a second or two for values to normalize
+                    3.) set RIGOL autoscale
+                    4.) wait for autoscale to complete
+                    5.) trigger RIGOL & IT9121s
+                    6.) capture RIGOL waveform and IT9121 current, voltage and power
+                    7.) save RIGOL waveform to .csv file and IT9121 data to seperate .csv file
+                    8.) trigger next loop
+                    """
+
+                    # TODO if required zero the secondary and send it to MCU
+
+                    # define empty array
+                    """ prepare measured date for saving """
+                    # as the user might only select few channels
+                    # then the channels which were not refreshed might differ in lenght ot the refreshed ones
+                    # get the longest channel and write each channel where shorter chanels have the rest
+                    # of data encoded as NaN
+                    array_to_write = np.ones((np.max([len(ps) for ps in arraylist]), len(arraylist))) * np.nan
+                    for i, c in enumerate(arraylist):  # populate columns
+                        array_to_write[:len(c), i] = c
+
+                    """save measured data """
+
+                    filename_actual = self.filename_base + "_" + str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
+                        secondary_actual) + "." + self.filename_ext
+                    np.savetxt(filename_actual, array_to_write, delimiter=";")
+
+                    filename_actual_rigol = self.filename_base + "_rigol_" + str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
+                        secondary_actual) + "." + self.filename_ext
+                    np.savetxt(filename_actual_rigol, arraylist_rigol_plot, delimiter=";")
+
+                    filename_actual_itech_1_voltage = self.filename_base + "_itech_1_voltage_" + str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
+                        secondary_actual) + "." + self.filename_ext
+                    np.savetxt(filename_actual_itech_1_voltage, scalar_value_itech_1_voltage, delimiter=";")
+
+                    filename_actual_itech_1_current = self.filename_base + "_itech_1_current_"+ str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
+                        secondary_actual) + "." + self.filename_ext
+                    np.savetxt(filename_actual_itech_1_current, scalar_value_itech_1_current, delimiter=";")
+
+                    filename_actual_itech_2_voltage = self.filename_base + "_itech_2_voltage_"+ str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
+                        secondary_actual) + "." + self.filename_ext
+                    np.savetxt(filename_actual_itech_2_voltage, scalar_value_itech_2_voltage, delimiter=";")
+
+                    filename_actual_itech_2_current = self.filename_base + "_itech_2_current_" + str(self.input_voltage) + "_"+ str(primary_actual) + "_" + str(
+                        secondary_actual) + "." + self.filename_ext
+                    np.savetxt(filename_actual_itech_2_current, scalar_value_itech_2_current, delimiter=";")
+
+                    filename_actual_kinetiq_1_voltage = self.filename_base + "_kinetiq_1_voltage_"+ str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
+                        secondary_actual) + "." + self.filename_ext
+                    np.savetxt(filename_actual_kinetiq_1_voltage, scalar_value_kinetiq_1_voltage, delimiter=";")
+
+                    filename_actual_kinetiq_1_current = self.filename_base + "_kinetiq_1_current_"+ str(self.input_voltage) + "_" + str(
+                        primary_actual) + "_" + str(
+                        secondary_actual) + "." + self.filename_ext
+                    np.savetxt(filename_actual_kinetiq_1_current, scalar_value_kinetiq_1_current, delimiter=";")
+
+                    filename_actual_kinetiq_2_voltage = self.filename_base + "_kinetiq_2_voltage_"+ str(self.input_voltage) + "_" + str(
+                        primary_actual) + "_" + str(
+                        secondary_actual) + "." + self.filename_ext
+                    np.savetxt(filename_actual_kinetiq_2_voltage, scalar_value_kinetiq_2_voltage, delimiter=";")
+
+                    filename_actual_kinetiq_2_current = self.filename_base + "_kinetiq_2_current_"+ str(self.input_voltage) + "_" + str(
+                    primary_actual) + "_" + str(
+                    secondary_actual) + "." + self.filename_ext
+                    np.savetxt(filename_actual_kinetiq_2_current, scalar_value_kinetiq_2_current, delimiter=";")
+
+                    self.Rigol_DS1000Z.run()
+                    self.ITech_IT9121_1.trigger(trigger_mode='OFF')
+                    self.ITech_IT9121_2.trigger(trigger_mode='OFF')
+
+                    self.KinetiQ_PPA5530.set_data_hold(hold='OFF')
+
+                    # prep the next value of current
+                    secondary_actual = secondary_actual + self.secondary_delta
+
+                # at the end of sequence, soft unroll - might be conditional
+                secondary_actual = secondary_actual - 2 * self.secondary_delta
+                if self.secondary_unroll:
+                    while secondary_actual > self.secondary_start:
+                        # update new value
+                        data = struct.pack('<f', (secondary_actual / 100))
+                        self.app.commonitor.send_packet(0x0E02, data)
+                        self.secondary_signal.emit(secondary_actual)
+                        # wait for things to settle down
+                        time.sleep(self.secondary_delay)
+                        secondary_actual = secondary_actual - self.secondary_delta
+
+                # prepare for the next iteration
+                secondary_actual = self.secondary_start
+                data = struct.pack('<f', (secondary_actual / 100))
+                self.app.commonitor.send_packet(0x0E02, data)
+                self.secondary_signal.emit(secondary_actual)
+
+                # prep the next value
+                primary_actual = primary_actual + self.primary_delta
+
+            # at the end of sequence, soft unroll - might be conditional
+            primary_actual = primary_actual - 2 * self.primary_delta
+            if self.primary_unroll:
+                while primary_actual > self.primary_start:
+                    # update new value
+                    data = struct.pack('<f', (primary_actual / 100))
+                    self.app.commonitor.send_packet(0x0E01, data)
+                    self.primary_signal.emit(primary_actual)
+                    # wait for things to settle down
+                    time.sleep(self.primary_delay)
+                    primary_actual = primary_actual - self.primary_delta
+
+            primary_actual = self.primary_start
+            data = struct.pack('<f', (primary_actual / 100))
+            self.app.commonitor.send_packet(0x0E01, data)
+            self.primary_signal.emit(primary_actual)
+            # trigger cleanup, when finished
+            self.finished.emit()

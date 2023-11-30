@@ -15,6 +15,14 @@ class IT6000C():
     def get_id(self):
         return self.addr.query("*IDN?")
 
+    def set_system_remote(self):
+
+        self.addr.write("SYST:REM")
+
+    def set_system_local(self):
+
+        self.addr.write("SYST:LOC")
+
     def set_overcurrent_protection_on_off(self, status = "OFF"):
         assert status in [1, 0, "ON", "OFF"]
         self.addr.write("SOURce:CURRent:OVER:PROTection:STATe {0}".format(status))
@@ -53,7 +61,6 @@ class IT6000C():
         self.set_current_limit_positive(positive)
         self.set_current_limit_negative(negative)
 
-
     def set_overcurrent_limit(self, limit = "MIN"):
         """
         set the current limit for over-current protection. Overcurrent protection needs to be set to ON for this
@@ -70,6 +77,11 @@ class IT6000C():
 
     def get_current_limit(self):
         return self.addr.query("SOURce:CURRent:OVER:PROTection:LEVel?")
+
+    def set_output(self, state = "OFF"):
+        assert state in ["ON", "OFF", 0, 1]
+
+        self.addr.write("OUTPut {0}".format(state))
 
     def set_output_voltage(self, voltage = 0.1):
         """
@@ -109,4 +121,7 @@ class IT6000C():
 
     def get_output_power(self):
         return self.addr.query("FETCh:POWer?")
+
+    def read_error(self):
+        return self.addr.query("SYSTem:ERRor?")
 

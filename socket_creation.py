@@ -54,13 +54,16 @@ def create_socket(name_or_ip, socket = False, port = 0):
                                  "correct and try again.")
 
             if device_id:
-                print("Device {0} successfully connected to socket TCPIP::{0}::INSTR.".format(device_id, name_or_ip))
+                print("Device {0} successfully connected to socket TCPIP::{1}::INSTR.".format(device_id, name_or_ip))
 
         if socket is True:
             # if socket is set to true, attempt to make connection using the socket function instead of INSTR
             print("\n---------------------------------------------------")
             print("Attempting to establish connection to ip {0}...".format(name_or_ip))
-            addr = rm.open_resource("TCPIP0::{0}::{1}::SOCKET".format(name_or_ip, port))
+            try:
+                addr = rm.open_resource("TCPIP0::{0}::{1}::SOCKET".format(name_or_ip, port))
+            except Exception:
+                raise ValueError("ERROR: device on socket {0}:{1} did not respond!".format(name_or_ip, port))
             addr.read_termination = '\n'  # specifies what end character signals termination; prevents timeouts
             addr.write_termination = '\n'  # specifies what end character signals termination; prevents timeouts
 
@@ -76,7 +79,7 @@ def create_socket(name_or_ip, socket = False, port = 0):
 
             # else if device responds, return message of success
             if device_id:
-                print("Device {0} successfully connected to socket TCPIP::{0}::INSTR.".format(device_id, name_or_ip))
+                print("Device {0} successfully connected to socket TCPIP::{1}::INSTR.".format(device_id, name_or_ip))
                 print("---------------------------------------------------")
 
 
@@ -91,6 +94,7 @@ def create_socket(name_or_ip, socket = False, port = 0):
 
         # create resource list
         resource_list = rm.list_resources()
+        print(resource_list)
 
         # if resource list is empty, raise error
         if resource_list == ():
@@ -109,17 +113,18 @@ def create_socket(name_or_ip, socket = False, port = 0):
             iteration = iteration + 1
 
             # open socket for each address in resource list
-            addr = rm.open_resource("{0}".format(resource))
-            addr.read_termination = '\n'  # specifies what end character signals termination; prevents timeouts
-            addr.write_termination = '\n'  # specifies what end character signals termination; prevents timeouts
-            try:
-                # ask device for it's ID
-                device_id = addr.query("*IDN?")
-                print("Attempting to connect to {0}...".format(resource))
-            except Exception:
-                # if there is no reply, pass
-                print("{0} did not reply... ".format(resource))
-                pass
+            if resource.find('ASRL'):
+                addr = rm.open_resource("{0}".format(resource))
+                addr.read_termination = '\n'  # specifies what end character signals termination; prevents timeouts
+                addr.write_termination = '\n'  # specifies what end character signals termination; prevents timeouts
+                try:
+                    # ask device for it's ID
+                    device_id = addr.query("*IDN?")
+                    print("Attempting to connect to {0}...".format(resource))
+                except Exception:
+                    # if there is no reply, pass
+                    print("{0} did not reply... ".format(resource))
+                    pass
 
             # if returned idn includes correct device id, keep socket open and exit for loop
             if name_or_ip in device_id:
@@ -130,7 +135,10 @@ def create_socket(name_or_ip, socket = False, port = 0):
             # if it doesn't, notify user what device is on current IP
             else:
                 print("Device on socket {0} is {1}, not {2}.".format(resource, device_id, name_or_ip))
-                addr.close()
+                try:
+                    addr.close()
+                except Exception:
+                    pass
 
             # if for loop ends and device hasn't been found yet, return error message
             if iteration == len(resource_list):
