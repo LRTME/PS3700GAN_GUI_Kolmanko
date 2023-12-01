@@ -157,6 +157,7 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
             num = 30
         data = struct.pack('<f', num)
         self.commonitor.send_packet(0x0D03, data)
+        self.ref_gen.ref_amp_range(num)
 
     def request_state(self):
         self.commonitor.send_packet(0x0D00, None)

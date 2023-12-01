@@ -9,7 +9,7 @@ import math
 import os
 
 # GUI GUI elements
-import Basic_GUI_main_window_frame
+import GUI_main_window
 import Basic_GUI_COM_settings
 import Basic_GUI_COM_statistics
 import Basic_GUI_about
@@ -19,7 +19,7 @@ import DLOG_gen
 import AUT_measure
 
 
-class AppMainClass(QtWidgets.QMainWindow, Basic_GUI_main_window_frame.Ui_MainWindow):
+class AppMainClass(QtWidgets.QMainWindow, GUI_main_window.Ui_MainWindow):
 
     # com monitor instance
     commonitor = com_monitor.ComMonitor()

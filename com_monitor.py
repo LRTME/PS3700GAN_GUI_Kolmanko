@@ -299,7 +299,7 @@ class ComMonitor(QtCore.QObject, serial.threaded.Packetizer):
 
 class RxWorker(QtCore.QObject):
     # signal to bind RxWorker with rx handler
-    rx_handler_signal = QtCore.Signal()
+    rx_handler_signal = QtCore.pyqtSignal()
 
     def __init__(self, rx_function):
         # QT init - for signal
