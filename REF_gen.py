@@ -103,8 +103,8 @@ class REF_generator():
         self.app.sld_amp.blockSignals(True)
         self.app.sld_amp.setValue(int(round(amp * self.ref_range * 100, 0)))
         self.app.sld_amp.blockSignals(False)
-        self.app.amp_spin.blockSignals(False)
-        self.app.amp_spin.setValue(round(40 * self.app.sld_amp.value() / (self.ref_range * 100), 2))
+        self.app.amp_spin.blockSignals(True)
+        self.app.amp_spin.setValue(round(self.ref_range * self.app.sld_amp.value() / (self.ref_range * 100), 2))
         self.app.amp_spin.blockSignals(False)
 
         self.app.sld_offset.blockSignals(True)
@@ -177,6 +177,8 @@ class REF_generator():
         self.app.amp_spin.setValue(round(self.ref_range * self.app.sld_amp.value() / (self.ref_range * 100), 2))
         self.app.amp_spin.blockSignals(False)
         # send packet
+        raw_val = self.app.sld_amp.value()
+        val = self.app.sld_amp.value() / (self.ref_range * 100)
         data = pack_Float_As_U_Long(self.app.sld_amp.value() / (self.ref_range * 100))
         self.app.commonitor.send_packet(0x0B10, data)
 
