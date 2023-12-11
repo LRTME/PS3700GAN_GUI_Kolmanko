@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-import Basic_GUI_COM_settings_dialog
+import GUI_com_settings_dialog
 
 import os
 
 # Import the PyQt4 module we'll need
-from PyQt5 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 
 # selected baud rate
 BAUDRATE = 1000000
@@ -16,10 +16,11 @@ uart_port_file = "uart_port.ini"
 
 
 # dialog
-class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
+class ComDialog(QtWidgets.QDialog, GUI_com_settings_dialog.Ui_Dialog):
     def __init__(self, parent=None):
         global BAUDRATE
         global UART_PORT
+        self.app = parent
         QtWidgets.QDialog.__init__(self, parent)
         # This is defined in GUI_design.py file automatically
         # It sets up layout and widgets that are defined
@@ -28,13 +29,13 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
         self.setWindowTitle("Connect/disconnect")
 
         self.app = parent
-        # ustrezno nastavim napis na gumbu
-        if self.app.commonitor.is_port_open() == True:
+        # modify the button text accordingly
+        if self.app.commonitor.is_port_open():
             self.btn_connect.setText("Disconnect")
         else:
             self.btn_connect.setText("Connect")
 
-        # ce imam ini datoteko preberem iz nje
+        # if config is available, read it
         if os.path.exists(uart_port_file):
             file = open(uart_port_file, "r")
             uart_port = file.read()
@@ -43,49 +44,50 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
         else:
             uart_port = None
 
-        # populiram combbox za izbiro porta
+        # populate port combobox
         list_portov = self.app.commonitor.get_list_of_ports()
         self.com_select.clear()
         self.com_select.addItems(list_portov)
-        # ce je kaksen port na voljo
+        # if there is any port available
         if len(list_portov) != 0:
-            # ce ni primernega potem izberi prvega
-            if self.app.commonitor.get_prefered_port() == None:
+            # if there is no preferred port, then select the first one
+            if self.app.commonitor.get_prefered_port() is None:
                 self.com_select.setCurrentIndex(0)
+            # otherwise select port from the config
             elif uart_port and UART_PORT in list_portov:
                 self.com_select.setCurrentIndex(list_portov.index(UART_PORT))
+            # if event that one is not available select the one which seems most likely
             else:
                 self.com_select.setCurrentIndex(list_portov.index(self.app.commonitor.get_prefered_port()))
         self.com_select.setEditable(False)
 
-        # ce imam ini datoteko preberem iz nje
-        if os.path.exists(baudrate_file):
-            file = open(baudrate_file, "r")
+        # read the config
+        if os.path.exists(os.path.join(self.app.app_path, baudrate_file)):
+            file = open(os.path.join(self.app.app_path, baudrate_file), "r")
             br = file.read()
             file.close()
             BAUDRATE = int(br)
 
-        # privzeto nastavim baudrate
-
+        # set the baudrate
         index = self.baud_select.findText(str(BAUDRATE))
         self.baud_select.setCurrentIndex(index)
 
-        # registriram klik na gum connect/disconnect
+        # register connect/disconnect button click
         self.btn_connect.clicked.connect(self.com_click)
 
-        # registriram klik na gumb OK
+        # register Ok button click
         self.btn_ok.clicked.connect(self.ok_click)
 
-        # registriram gumb refresh
+        # register Refresh button click
         self.btn_com_refresh.clicked.connect(self.refresh_ports)
 
-        # registriram spremembo baud_rate-a
+        # register change of baud rate
         self.baud_select.activated.connect(self.baud_clicked)
 
-        # registriram spremembo com_porta
+        # register change of port
         self.com_select.activated.connect(self.port_clicked)
 
-        # ustvarim timer za periodicno povprasevanje
+        # create a timer instance to send periodic ping
         self.sent_ping_count = 0
         self.received_ping_count = 0
         self.ping_acq = False
@@ -94,18 +96,17 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
         self.periodic_timer = QtCore.QTimer()
         self.periodic_timer.timeout.connect(self.send_ping)
 
-
-    # osvezim seznam com portov
+    # refresh port list combobox
     def refresh_ports(self):
         global UART_PORT
-        # najprej odstranim vse treutne porte
+        # clear the list
         self.com_select.clear()
-        # pogledam kateri so na voljo
-        list_portov = self.app.commonitor.get_list_of_ports()
-        # in jih dodam
-        self.com_select.addItems(list_portov)
+        # get new list
+        port_list = self.app.commonitor.get_list_of_ports()
+        # and populate them
+        self.com_select.addItems(port_list)
 
-        # ce imam ini datoteko preberem iz nje
+        # read the config
         if os.path.exists(uart_port_file):
             file = open(uart_port_file, "r")
             uart_port = file.read()
@@ -114,70 +115,69 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
         else:
             uart_port = None
 
-        # privzeto izberem najprimernejsi port
-        if len(list_portov) != 0:
-            if self.app.commonitor.get_prefered_port() == None:
+        # select most suitable port
+        if len(port_list) != 0:
+            if self.app.commonitor.get_prefered_port() is None:
                 self.com_select.setCurrentIndex(0)
-            elif uart_port and UART_PORT in list_portov:
-                self.com_select.setCurrentIndex(list_portov.index(UART_PORT))
+            elif uart_port and UART_PORT in port_list:
+                self.com_select.setCurrentIndex(port_list.index(UART_PORT))
             else:
-                self.com_select.setCurrentIndex(list_portov.index(self.app.commonitor.get_prefered_port()))
+                self.com_select.setCurrentIndex(port_list.index(self.app.commonitor.get_prefered_port()))
         self.com_select.setEditable(False)
 
-    # ob izbiri baudrate-a
+    # on new baud rate selection
     def baud_clicked(self):
-        # popravim baudrate
+        # change the baud rate
         global BAUDRATE
         BAUDRATE = int(self.baud_select.currentText())
         br = str(BAUDRATE)
-        # odprem datoteko in zapisem nastavitve
-        file = open(baudrate_file, "w")
+        # and save the config for next time
+        file = open(os.path.join(self.app.app_path, baudrate_file), "w")
         file.write(br)
         file.close()
         pass
 
     def port_clicked(self):
-        # popravim baudrate
+        # change port
         global UART_PORT
         UART_PORT = self.com_select.currentText()
-        # odprem datoteko in zapisem nastavitve
+        # and save the config for next time
         file = open(uart_port_file, "w")
         file.write(UART_PORT)
         file.close()
         pass
 
-    # ob pritisku na gum connect/disconnect
+    # on Connect/Disconnect button event
     def com_click(self):
-        # ce je port odport, ga zaprem
-        if self.app.commonitor.is_port_open() == True:
-            # sprostim nadzor po potrebi
+        # if port is open, close it
+        if self.app.commonitor.is_port_open():
             self.app.commonitor.close_port()
+            # signal into the GUI
             self.btn_connect.setText("Connect")
-            # sporocim v GUI, da je port zaprt
             self.app.statusbar.showMessage("Com port je zaprt", 2000)
-            # omogocim nastavljanje porta
+            # enable port and baud selection
             self.com_select.setDisabled(False)
             self.baud_select.setDisabled(False)
-            # ustavim timer
+            # stop periodic ping timer
             self.periodic_timer.stop()
 
-        # sicer ga pa odprem
+        # otherwise open it
         else:
-            # najprej pogledam kateri port je izbran
+            # get which port to open it
             chosen_port = self.com_select.currentText()
-            # potem odprem port, samo ce je port izbran
+            # then open it
             if chosen_port != "":
                 self.app.commonitor.open_port(chosen_port, BAUDRATE)
-                if self.app.commonitor.is_port_open() == True:
-                    # onemogocim spremebe porta in hitrosti
+                if self.app.commonitor.is_port_open():
+                    # disable port and baud selection
                     self.com_select.setDisabled(True)
                     self.baud_select.setDisabled(True)
 
-                    # prevzamem nadzor
+                    # signal int the GUI
                     self.btn_connect.setText("Disconnect")
                     self.app.statusbar.showMessage("Com port je odprt", 2000)
 
-                    # poženem timer thread
+                    # start periodic ping timer
                     self.periodic_timer.start(1000)
 
                 else:
@@ -187,12 +187,11 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
             else:
                 self.app.statusbar.showMessage("Problem pri odpiranju COM porta", 2000)
 
-    # ce pritisnem OK potem zaprem okno
+    # close the window on Ok
     def ok_click(self):
         self.close()
 
-    # nov thread, ki periodično pošlje zahtevo po svežih podatkih
-    # ce je port odprt. Sicer ustavi sam sebe
+    # periodic ping thread it stops itself if port is closed
     def send_ping(self):
         if self.app.commonitor.is_port_open():
             if self.ping_acq is False:
@@ -207,15 +206,13 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
         self.received_ping_count = self.received_ping_count + 1
         self.ping_acq = True
 
-    # ob zagonu skušam odpreti port
     def try_connect_at_startup(self, serial_number=None):
         global UART_PORT
         global BAUDRATE
-        # pogledam kateri porti so sploh na voljo
-        list_portov = self.app.commonitor.get_list_of_ports()
-        # ce je kaksen port na voljo
-        if len(list_portov) != 0:
-            # ce imam ini datoteko preberem iz nje
+        # check which ports are available
+        port_list = self.app.commonitor.get_list_of_ports()
+        if len(port_list) != 0:
+            # read config
             if os.path.exists(uart_port_file):
                 file = open(uart_port_file, "r")
                 uart_port = file.read()
@@ -223,34 +220,33 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
                 UART_PORT = uart_port
             else:
                 uart_port = None
-            if uart_port in list_portov:
-                preffered_port = uart_port
+            if uart_port in port_list:
+                preferred_port = uart_port
             else:
-                preffered_port = self.app.commonitor.get_prefered_port(portname=serial_number)
-            # in ce je naprava priklopljena
-            if preffered_port != None:
-                # in ce imam ini datoteko preberem iz nje
-                if os.path.exists(baudrate_file):
-                    file = open(baudrate_file, "r")
+                preferred_port = self.app.commonitor.get_prefered_port(portname=serial_number)
+            # open only if it seems reasonable (port number or description matches
+            if preferred_port is not None:
+                # read config
+                if os.path.exists(os.path.join(self.app.app_path, baudrate_file)):
+                    file = open(os.path.join(self.app.app_path, baudrate_file), "r")
                     br = file.read()
                     file.close()
                     BAUDRATE = int(br)
-
                     uart_port = None
-                # in ce je trenutno port zaprt
-                if self.app.commonitor.is_port_open() == False:
-                    self.app.commonitor.open_port(preffered_port, BAUDRATE)
-                    if self.app.commonitor.is_port_open() == True:
+                # open only if currently closed
+                if not self.app.commonitor.is_port_open():
+                    self.app.commonitor.open_port(preferred_port, BAUDRATE)
+                    if self.app.commonitor.is_port_open():
                         self.app.statusbar.showMessage("Com port je odprt", 2000)
                         self.btn_connect.setText("Disconnect")
-                        # onemogocim spremebe porta in hitrosti
+                        # disable port and baud changes
                         self.com_select.setDisabled(True)
                         self.baud_select.setDisabled(True)
                         self.periodic_timer.start(1000)
 
     def showEvent(self, show_event):
-        # ustrezno nastavim napis na gumbu
-        if self.app.commonitor.is_port_open() == True:
+        # set up gui properly
+        if self.app.commonitor.is_port_open():
             self.btn_connect.setText("Disconnect")
             self.com_select.setDisabled(True)
             self.baud_select.setDisabled(True)
@@ -260,15 +256,14 @@ class ComDialog(QtWidgets.QDialog, Basic_GUI_COM_settings_dialog.Ui_Dialog):
             self.baud_select.setDisabled(False)
             self.periodic_timer.stop()
 
-        # populiram combbox za izbiro porta
-        list_portov = self.app.commonitor.get_list_of_ports()
+        # populate port list combobox
+        port_list = self.app.commonitor.get_list_of_ports()
         self.com_select.clear()
-        self.com_select.addItems(list_portov)
-        # ce je kaksen port na voljo
-        if len(list_portov) != 0:
-            # ce ni primernega potem izberi prvega
-            if self.app.commonitor.get_prefered_port() == None:
+        self.com_select.addItems(port_list)
+        # select the one that seems reasonable
+        if len(port_list) != 0:
+            if self.app.commonitor.get_prefered_port() is None:
                 self.com_select.setCurrentIndex(0)
             else:
-                self.com_select.setCurrentIndex(list_portov.index(self.app.commonitor.get_prefered_port()))
+                self.com_select.setCurrentIndex(port_list.index(self.app.commonitor.get_prefered_port()))
         self.com_select.setEditable(False)

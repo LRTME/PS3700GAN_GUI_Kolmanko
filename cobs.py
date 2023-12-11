@@ -16,6 +16,7 @@ def _get_buffer_view(in_bytes):
         raise BufferError('object must be a single-dimension buffer of bytes.')
     return mv
 
+
 def encode(in_bytes):
     """Encode a string using Consistent Overhead Byte Stuffing (COBS).
     

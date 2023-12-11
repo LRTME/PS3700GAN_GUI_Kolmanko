@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-import Basic_GUI_COM_statistics_dialog
+import GUI_com_statistics_dialog
 
-# Import the PyQt4 module we'll need
-from PyQt5 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 
-# com stat dialog
-class ComStat(QtWidgets.QDialog, Basic_GUI_COM_statistics_dialog.Ui_Communicationstatistics):
+
+class ComStat(QtWidgets.QDialog, GUI_com_statistics_dialog.Ui_Dialog):
     def __init__(self, parent=None):
         QtWidgets.QDialog.__init__(self, parent)
         # This is defined in GUI_design.py file automatically
@@ -14,24 +13,24 @@ class ComStat(QtWidgets.QDialog, Basic_GUI_COM_statistics_dialog.Ui_Communicatio
 
         self.setWindowTitle("Com statistics")
 
-        #lahko je tudi v ozadju
+        # The dialog can be in the background
         self.setModal(False)
 
         self.app = parent
-        # nastavim napise za statistiko
+        # refresh label data
         self.update_values()
 
-        # registriram klik na gumb OK
+        # register Ok button click
         self.btn_ok.clicked.connect(self.ok_click)
 
-        # ustvarim casovnik, ki bo vsak 0.25 sekunde osveziv podatke
+        # create a timer to trigger periodic refresh
         self.update_timer = QtCore.QTimer()
         self.update_timer.timeout.connect(self.update_values)
         self.update_timer.start(250)
 
-    # za periodicno osvezevanje
+    # refresh shown data
     def update_values(self):
-        data = self.app.commonitor.statistic_data();
+        data = self.app.commonitor.statistic_data()
         self.nr_packets_sent.setText(str(data[0]))
         self.nr_packets_received.setText(str(data[1]))
         self.nr_decode_errors.setText(str(data[2]))
@@ -39,6 +38,6 @@ class ComStat(QtWidgets.QDialog, Basic_GUI_COM_statistics_dialog.Ui_Communicatio
         self.nr_non_registered_packets_received.setText(str(data[4]))
         self.nr_bytes_received.setText(str(data[5]))
 
-    # ce pritisnem OK potem zaprem okno
+    # close on Ok
     def ok_click(self):
         self.close()

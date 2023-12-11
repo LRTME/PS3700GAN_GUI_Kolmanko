@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-# Import the PyQt4 module we'll need
-from PyQt5 import QtWidgets, QtGui, QtCore
-
+from PySide6 import QtWidgets, QtGui, QtCore
 import math
 import pyqtgraph as pg
 import struct

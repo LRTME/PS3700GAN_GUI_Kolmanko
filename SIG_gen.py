@@ -2,36 +2,36 @@
 import struct
 
 
-class REF_generator():
+class SIG_generator():
     def __init__(self, parent):
         self.app = parent
 
-        self.app.commonitor.connect_rx_handler(0x0B0A, self.on_ref_params_received)
+        self.app.commonitor.connect_rx_handler(0x0B0A, self.on_sig_gen_params_received)
 
         # connect and configure reference generator items
-        self.app.naklon_spin.setOpts(value=100, dec=True, step=1, minStep=1, int=True, decimals=4)
-        self.app.naklon_spin.setMinimum(1)
-        self.app.naklon_spin.setMaximum(10000)
-        self.app.naklon_spin.valueChanged.connect(self.naklon_changed)
-        self.app.frekvenca_spin.valueChanged.connect(self.ref_freq_changed)
+        self.app.slew_spin.setOpts(value=100, dec=True, step=1, minStep=1, int=True, decimals=4)
+        self.app.slew_spin.setMinimum(1)
+        self.app.slew_spin.setMaximum(10000)
+        self.app.slew_spin.valueChanged.connect(self.slew_changed)
+        self.app.freq_spin.valueChanged.connect(self.ref_freq_changed)
 
         self.ref_range = 1
         self.app.amp_spin.valueChanged.connect(self.ref_amp_spin_changed)
         self.app.amp_spin.setSingleStep(0.01)
         self.app.sld_amp.valueChanged[int].connect(self.ref_amp_slider_changed)
-        self.app.sld_amp.sliderReleased.connect(self.request_ref_params)
+        self.app.sld_amp.sliderReleased.connect(self.request_sig_gen_params)
         self.app.sld_amp.setMaximum(self.ref_range * 100)
 
         self.app.sld_offset.valueChanged[int].connect(self.ref_offset_changed)
-        self.app.sld_offset.sliderReleased.connect(self.request_ref_params)
+        self.app.sld_offset.sliderReleased.connect(self.request_sig_gen_params)
         self.app.sld_duty.valueChanged[int].connect(self.ref_duty_changed)
-        self.app.sld_duty.sliderReleased.connect(self.request_ref_params)
-        self.app.oblika_sel.currentIndexChanged.connect(self.type_changed)
+        self.app.sld_duty.sliderReleased.connect(self.request_sig_gen_params)
+        self.app.form_sel.currentIndexChanged.connect(self.type_changed)
         self.app.clock_sel.currentIndexChanged.connect(self.clock_shanged)
-        self.app.harmonik_spin.setOpts(value=1, dec=True, step=1, minStep=1, int=False)
-        self.app.harmonik_spin.setMinimum(1)
-        self.app.harmonik_spin.setMaximum(100)
-        self.app.harmonik_spin.valueChanged.connect(self.ref_harm_changed)
+        self.app.harmonic_spin.setOpts(value=1, dec=True, step=1, minStep=1, int=False)
+        self.app.harmonic_spin.setMinimum(1)
+        self.app.harmonic_spin.setMaximum(100)
+        self.app.harmonic_spin.valueChanged.connect(self.ref_harm_changed)
         self.app.mode_sel.currentIndexChanged.connect(self.mode_changed)
         self.app.cycle_number_spin.setOpts(value=1, dec=True, step=1, minStep=1, int=False)
         self.app.cycle_number_spin.setMinimum(1)
@@ -41,9 +41,9 @@ class REF_generator():
 
         # if com port is open, request parameters for initial update of GUI
         if self.app.commonitor.is_port_open():
-            self.request_ref_params()
+            self.request_sig_gen_params()
         else:
-            self.app.commonitor.register_on_open_callback(self.request_ref_params)
+            self.app.commonitor.register_on_open_callback(self.request_sig_gen_params)
 
     def mode_changed(self):
         if self.app.mode_sel.currentIndex() == 0:
@@ -76,7 +76,7 @@ class REF_generator():
             if self.app.lbl_reg_gen_mode.text() == "Running":
                 self.app.commonitor.send_packet(0x0B1D, struct.pack('<h', 0x0000))
 
-    def on_ref_params_received(self):
+    def on_sig_gen_params_received(self):
         # grab packet date
         data = self.app.commonitor.get_data()
 
@@ -96,9 +96,9 @@ class REF_generator():
         periods = struct.unpack('<h', data[30:32])[0]
 
         # update GUI widgets
-        self.app.frekvenca_spin.blockSignals(True)
-        self.app.frekvenca_spin.setValue(freq)
-        self.app.frekvenca_spin.blockSignals(False)
+        self.app.freq_spin.blockSignals(True)
+        self.app.freq_spin.setValue(freq)
+        self.app.freq_spin.blockSignals(False)
 
         self.app.sld_amp.blockSignals(True)
         self.app.sld_amp.setValue(int(round(amp * self.ref_range * 100, 0)))
@@ -117,29 +117,29 @@ class REF_generator():
         self.app.sld_duty.blockSignals(False)
         self.app.lbl_duty.setText(str(self.app.sld_duty.value() / 100))
 
-        self.app.naklon_spin.blockSignals(True)
-        self.app.naklon_spin.setValue(slew)
-        self.app.naklon_spin.blockSignals(False)
+        self.app.slew_spin.blockSignals(True)
+        self.app.slew_spin.setValue(slew)
+        self.app.slew_spin.blockSignals(False)
 
-        self.app.oblika_sel.blockSignals(True)
-        self.app.oblika_sel.setCurrentIndex(type)
-        self.app.oblika_sel.blockSignals(False)
+        self.app.form_sel.blockSignals(True)
+        self.app.form_sel.setCurrentIndex(type)
+        self.app.form_sel.blockSignals(False)
 
         self.app.clock_sel.blockSignals(True)
         self.app.clock_sel.setCurrentIndex(clock)
         self.app.clock_sel.blockSignals(False)
 
-        self.app.harmonik_spin.blockSignals(True)
-        self.app.harmonik_spin.setValue(harmonic)
-        self.app.harmonik_spin.blockSignals(False)
+        self.app.harmonic_spin.blockSignals(True)
+        self.app.harmonic_spin.setValue(harmonic)
+        self.app.harmonic_spin.blockSignals(False)
 
         # enable disable frequency/harmonic widgets
         if clock == 0:
-            self.app.harmonik_spin.setEnabled(False)
-            self.app.frekvenca_spin.setEnabled(True)
+            self.app.harmonic_spin.setEnabled(False)
+            self.app.freq_spin.setEnabled(True)
         else:
-            self.app.harmonik_spin.setEnabled(True)
-            self.app.frekvenca_spin.setEnabled(False)
+            self.app.harmonic_spin.setEnabled(True)
+            self.app.freq_spin.setEnabled(False)
 
         self.app.mode_sel.blockSignals(True)
         self.app.mode_sel.setCurrentIndex(mode)
@@ -177,8 +177,6 @@ class REF_generator():
         self.app.amp_spin.setValue(round(self.ref_range * self.app.sld_amp.value() / (self.ref_range * 100), 2))
         self.app.amp_spin.blockSignals(False)
         # send packet
-        raw_val = self.app.sld_amp.value()
-        val = self.app.sld_amp.value() / (self.ref_range * 100)
         data = pack_Float_As_U_Long(self.app.sld_amp.value() / (self.ref_range * 100))
         self.app.commonitor.send_packet(0x0B10, data)
 
@@ -191,12 +189,12 @@ class REF_generator():
 
     def ref_freq_changed(self):
         # send packet
-        data = struct.pack('<f', self.app.frekvenca_spin.value())
+        data = struct.pack('<f', self.app.freq_spin.value())
         self.app.commonitor.send_packet(0x0B12, data)
 
     def ref_harm_changed(self):
         # send packet
-        harm = int(self.app.harmonik_spin.value())
+        harm = int(self.app.harmonic_spin.value())
         data = struct.pack('<h', harm)
         self.app.commonitor.send_packet(0x0B17, data)
 
@@ -207,20 +205,27 @@ class REF_generator():
         data = pack_Float_As_U_Long(self.app.sld_duty.value() / 100)
         self.app.commonitor.send_packet(0x0B13, data)
 
-    def naklon_changed(self):
+    def slew_changed(self):
         # send packet
-        data = struct.pack('<f', int(self.app.naklon_spin.value()))
+        data = struct.pack('<f', int(self.app.slew_spin.value()))
         self.app.commonitor.send_packet(0x0B14, data)
 
     def type_changed(self):
-        data = struct.pack('<h', int(self.app.oblika_sel.currentIndex()))
+        data = struct.pack('<h', int(self.app.form_sel.currentIndex()))
         self.app.commonitor.send_packet(0x0B15, data)
 
     def clock_shanged(self):
+        # with external clock source signal generator can only modify harmonic number
+        if self.app.clock_sel.currentIndex() == 0:
+            self.app.harmonic_spin.setEnabled(False)
+            self.app.freq_spin.setEnabled(True)
+        else:
+            self.app.harmonic_spin.setEnabled(True)
+            self.app.freq_spin.setEnabled(False)
         data = struct.pack('<h', int(self.app.clock_sel.currentIndex()))
         self.app.commonitor.send_packet(0x0B16, data)
 
-    def request_ref_params(self):
+    def request_sig_gen_params(self):
         self.app.commonitor.send_packet(0x0B1A, None)
 
 # support function

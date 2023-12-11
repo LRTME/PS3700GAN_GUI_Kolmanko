@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 import struct
-import sys
-
-from PyQt5 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 import threading
 import time
 import numpy as np
 import csv
 
-from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QPushButton
+import GUI_automatic_measurements_dialog
 
 import DS1000Z
 import IT9121
@@ -23,15 +21,17 @@ COLOR_BRIGHT_RED = "background-color:#FF4646;"
 COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 
 
-class AUT_measurement(QtCore.QObject):
+class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Dialog):
 
     # for measurement automation
-    finished = QtCore.pyqtSignal()
-    primary_signal = QtCore.pyqtSignal(int)
-    secondary_signal = QtCore.pyqtSignal(int)
+    finished = QtCore.Signal()
+    primary_signal = QtCore.Signal(int)
+    secondary_signal = QtCore.Signal(int)
 
     def __init__(self, parent):
-        super().__init__(parent)
+        QtWidgets.QDialog.__init__(self, parent)
+        self.setupUi(self)
+        self.setModal(False)
         self.app = parent
         self.speed_start = 0
         self.speed_stop = 0
@@ -46,46 +46,46 @@ class AUT_measurement(QtCore.QObject):
         self.itech_watmeter_1_handler = None
 
         # init delay spinboxes
-        self.app.spb_primary_delay.setOpts(value=1, dec=True, step=1, minStep=0.01, int=False)
-        self.app.spb_primary_delay.setMinimum(0.001)
-        self.app.spb_primary_delay.setMaximum(100)
-        self.app.spb_primary_delay.setValue(0.1)
+        self.spb_primary_delay.setOpts(value=1, dec=True, step=1, minStep=0.01, int=False)
+        self.spb_primary_delay.setMinimum(0.001)
+        self.spb_primary_delay.setMaximum(100)
+        self.spb_primary_delay.setValue(0.1)
 
-        self.app.spb_secondary_delay.setOpts(value=1, dec=True, step=1, minStep=0.01, int=False)
-        self.app.spb_secondary_delay.setMinimum(0.001)
-        self.app.spb_secondary_delay.setMaximum(10)
-        self.app.spb_secondary_delay.setValue(0.01)
+        self.spb_secondary_delay.setOpts(value=1, dec=True, step=1, minStep=0.01, int=False)
+        self.spb_secondary_delay.setMinimum(0.001)
+        self.spb_secondary_delay.setMaximum(10)
+        self.spb_secondary_delay.setValue(0.1)
 
         self.finished.connect(self.measure_end)
         self.primary_signal.connect(self.primary_updated)
         self.secondary_signal.connect(self.secondary_updated)
 
-        self.app.sld_primary.valueChanged[int].connect(self.primary_changed)
-        self.app.sld_secondary.valueChanged[int].connect(self.secondary_changed)
+        self.sld_primary.valueChanged[int].connect(self.primary_changed)
+        self.sld_secondary.valueChanged[int].connect(self.secondary_changed)
 
-        self.app.btn_start_measure.clicked.connect(self.measure_start)
-        self.app.btn_stop_measure.clicked.connect(self.measure_stop)
+        self.btn_start_measure.clicked.connect(self.measure_start)
+        self.btn_stop_measure.clicked.connect(self.measure_stop)
 
     # komunikacija ob spremembi vrednosti
     def primary_changed(self):
-        self.app.lbl_primary.setText(str(self.app.sld_primary.value() / 100))
-        self.app.commonitor.send_packet(0x0E01, struct.pack('<f', float(self.app.sld_primary.value() / 100)))
+        self.lbl_primary.setText(str(self.sld_primary.value() / 100))
+        self.app.commonitor.send_packet(0x0E01, struct.pack('<f', float(self.sld_primary.value() / 100)))
 
     def secondary_changed(self):
-        self.app.lbl_secondary.setText(str(self.app.sld_secondary.value() / 100))
-        self.app.commonitor.send_packet(0x0E02, struct.pack('<f', float(self.app.sld_secondary.value() / 100)))
+        self.lbl_secondary.setText(str(self.sld_secondary.value() / 100))
+        self.app.commonitor.send_packet(0x0E02, struct.pack('<f', float(self.sld_secondary.value() / 100)))
 
     def primary_updated(self, value):
-        self.app.lbl_primary.setText(str(round(value / 100, 2)))
-        self.app.sld_primary.blockSignals(True)
-        self.app.sld_primary.setValue(value)
-        self.app.sld_primary.blockSignals(False)
+        self.lbl_primary.setText(str(round(value / 100, 2)))
+        self.sld_primary.blockSignals(True)
+        self.sld_primary.setValue(value)
+        self.sld_primary.blockSignals(False)
 
     def secondary_updated(self, value):
-        self.app.lbl_secondary.setText(str(round(value / 100, 2)))
-        self.app.sld_secondary.blockSignals(True)
-        self.app.sld_secondary.setValue(value)
-        self.app.sld_secondary.blockSignals(True)
+        self.lbl_secondary.setText(str(round(value / 100, 2)))
+        self.sld_secondary.blockSignals(True)
+        self.sld_secondary.setValue(value)
+        self.sld_secondary.blockSignals(True)
 
     def connection_error_message_box(self, device_name):
         msg = QMessageBox()
@@ -110,46 +110,47 @@ class AUT_measurement(QtCore.QObject):
     # ko uporabnik pritisne na gumb, da bi zagnal meritev
     def measure_start(self):
         # parse the test boundary conditions
-        self.primary_start = int(self.app.spb_primary_start.value() * 100)
-        self.primary_stop = int(self.app.spb_primary_stop.value() * 100)
-        self.primary_delta = int(self.app.spb_primary_delta.value() * 100)
-        self.primary_delay = self.app.spb_primary_delay.value()
-        self.primary_unroll = self.app.cb_primary_unroll.isChecked()
+        self.primary_start = int(self.spb_primary_start.value() * 100)
+        self.primary_stop = int(self.spb_primary_stop.value() * 100)
+        self.primary_delta = int(self.spb_primary_delta.value() * 100)
+        self.primary_delay = self.spb_primary_delay.value()
+        self.primary_unroll = self.cb_primary_unroll.isChecked()
 
-        self.secondary_start = int(self.app.spb_secondary_start.value() * 100)
-        self.secondary_stop = int(self.app.spb_secondary_stop.value() * 100)
-        self.secondary_delta = int(self.app.spb_secondary_delta.value() * 100)
-        self.secondary_delay = self.app.spb_secondary_delay.value()
-        self.secondary_unroll = self.app.cb_secondary_unroll.isChecked()
+        self.secondary_start = int(self.spb_secondary_start.value() * 100)
+        self.secondary_stop = int(self.spb_secondary_stop.value() * 100)
+        self.secondary_delta = int(self.spb_secondary_delta.value() * 100)
+        self.secondary_delay = self.spb_secondary_delay.value()
+        self.secondary_unroll = self.cb_secondary_unroll.isChecked()
+        self.secondary_zero = self.cb_secondary_zero.isChecked()
 
         # run the measurements only if setup is sane
         if self.primary_stop < self.primary_start:
-            self.app.spb_primary_start.setStyleSheet(COLOR_BRIGHT_RED)
-            self.app.spb_primary_stop.setStyleSheet(COLOR_BRIGHT_RED)
+            self.spb_primary_start.setStyleSheet(COLOR_BRIGHT_RED)
+            self.spb_primary_stop.setStyleSheet(COLOR_BRIGHT_RED)
             return
         else:
-            self.app.spb_primary_start.setStyleSheet(COLOR_DEFAULT)
-            self.app.spb_primary_stop.setStyleSheet(COLOR_DEFAULT)
+            self.spb_primary_start.setStyleSheet(COLOR_DEFAULT)
+            self.spb_primary_stop.setStyleSheet(COLOR_DEFAULT)
 
         if self.primary_delta > (self.primary_stop - self.primary_start):
-            self.app.spb_primary_delta.setStyleSheet(COLOR_BRIGHT_RED)
+            self.spb_primary_delta.setStyleSheet(COLOR_BRIGHT_RED)
             return
         else:
-            self.app.spb_primary_delta.setStyleSheet(COLOR_DEFAULT)
+            self.spb_primary_delta.setStyleSheet(COLOR_DEFAULT)
 
         if self.secondary_stop < self.secondary_start:
-            self.app.spb_secondary_start.setStyleSheet(COLOR_BRIGHT_RED)
-            self.app.spb_secondary_stop.setStyleSheet(COLOR_BRIGHT_RED)
+            self.spb_secondary_start.setStyleSheet(COLOR_BRIGHT_RED)
+            self.spb_secondary_stop.setStyleSheet(COLOR_BRIGHT_RED)
             return
         else:
-            self.app.spb_secondary_start.setStyleSheet(COLOR_DEFAULT)
-            self.app.spb_secondary_stop.setStyleSheet(COLOR_DEFAULT)
+            self.spb_secondary_start.setStyleSheet(COLOR_DEFAULT)
+            self.spb_secondary_stop.setStyleSheet(COLOR_DEFAULT)
 
         if self.secondary_delta > (self.secondary_stop - self.secondary_start):
-            self.app.spb_secondary_delta.setStyleSheet(COLOR_BRIGHT_RED)
+            self.spb_secondary_delta.setStyleSheet(COLOR_BRIGHT_RED)
             return
         else:
-            self.app.spb_secondary_delta.setStyleSheet(COLOR_DEFAULT)
+            self.spb_secondary_delta.setStyleSheet(COLOR_DEFAULT)
 
         # ask user for a filename
         initial_filename = QtWidgets.QFileDialog.getSaveFileName(self.app, caption='Save File', filter="*.csv")[0]
@@ -200,20 +201,25 @@ class AUT_measurement(QtCore.QObject):
 
 
         # Block the button until measurements are done
-        self.app.btn_start_measure.setEnabled(False)
+        self.btn_start_measure.setEnabled(False)
         # start measurement thread (so that the GUI is not blocked
         self.stop_event = threading.Event()
         self.thread = threading.Thread(target=self.run_measurements, args=(self.stop_event,))
         self.thread.start()
+
+        # enable the stop button
+        self.btn_stop_measure.setEnabled(True)
         pass
 
     def measure_stop(self):
         self.stop_event.set()
+        self.btn_stop_measure.setEnabled(False)
 
     def measure_end(self):
-        self.app.btn_start_measure.setEnabled(True)
-        self.app.sld_amp.setValue(0)
-
+        self.btn_start_measure.setEnabled(True)
+        self.btn_stop_measure.setEnabled(False)
+        self.sld_primary.setValue(0)
+        self.sld_secondary.setValue(0)
 
     # measurement thread
     def run_measurements(self, stop_event: threading.Event):
@@ -424,6 +430,9 @@ class AUT_measurement(QtCore.QObject):
                 secondary_actual = secondary_actual - 2 * self.secondary_delta
                 if self.secondary_unroll:
                     while secondary_actual > self.secondary_start:
+                        # exit if required
+                        if stop_event.is_set():
+                            break
                         # update new value
                         data = struct.pack('<f', (secondary_actual / 100))
                         self.app.commonitor.send_packet(0x0E02, data)
@@ -460,5 +469,5 @@ class AUT_measurement(QtCore.QObject):
             data = struct.pack('<f', (primary_actual / 100))
             self.app.commonitor.send_packet(0x0E01, data)
             self.primary_signal.emit(primary_actual)
-            # trigger cleanup, when finished
+            # trigger cleanup, when finished TODO a je to prav
             self.finished.emit()

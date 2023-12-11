@@ -7,9 +7,9 @@ if hasattr(sys, 'frozen'):
     pyi_splash.update_text(splash_text + "Importing modules")
 
 import struct
-import Basic_GUI_main_window
+import MAIN_window
 import os
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PySide6 import QtWidgets, QtGui, QtCore
 # za samo eno instanco applikacije
 import singleton
 
@@ -24,11 +24,15 @@ COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 states = [("Startup", COLOR_YELLOW), ("Standby_cold", COLOR_YELLOW), ("Standby_hot", COLOR_YELLOW),
           ("Work", COLOR_GREEN), ("Fault_sensed", COLOR_RED), ("Fault", COLOR_RED)]
 
-class MainApp(Basic_GUI_main_window.AppMainClass):
+class MainApp(MAIN_window.AppMainClass):
 
     def __init__(self, parent=None):
-        if getattr(sys, 'frozen', False):
+        if hasattr(sys, 'frozen'):
             pyi_splash.update_text(splash_text + "Building GUI")
+        if hasattr(sys, '_MEIPASS'):
+            self.app_path = sys._MEIPASS
+        else:
+            self.app_path = os.path.dirname(__file__)
 
         super().__init__(SERIAL_NUMBER)
         self.setWindowTitle("PS3700GAN_GUI")
@@ -65,7 +69,7 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
 
         # zahtevam statusne podatke za data logger in generator signalov
         # if com port is open request parameters
-        if getattr(sys, 'frozen', False):
+        if hasattr(sys, 'frozen'):
             pyi_splash.update_text(splash_text + "Trying to open COM port")
         if self.commonitor.is_port_open():
             self.request_state()
@@ -315,10 +319,9 @@ def main():
     # error: qt.qpa.plugin: Could not find the Qt platform plugin "xcb" in ""
     # This application failed to start because no Qt platform plugin could be initialized.
     # Reinstalling the application may fix this problem.
-
-    import PyQt5
-    pyqt = os.path.dirname(PyQt5.__file__)
-    os.environ['QT_PLUGIN_PATH'] = os.path.join(pyqt, "Qt/plugins")
+    #import PyQt5
+    #pyqt = os.path.dirname(PyQt5.__file__)
+    #os.environ['QT_PLUGIN_PATH'] = os.path.join(pyqt, "Qt/plugins")
 
     # A new instance of QApplication
     app = QtWidgets.QApplication(sys.argv)
@@ -327,7 +330,7 @@ def main():
     try:
         me = singleton.SingleInstance()
     except singleton.SingleInstanceException:
-        if getattr(sys, 'frozen', False):
+        if hasattr(sys, 'frozen'):
             pyi_splash.close()
         # tukaj bi lahko pokazal vsaj kaksno okno
         w = QtWidgets.QWidget()
@@ -336,17 +339,20 @@ def main():
         w.show()
         w.setWindowFlags(w.windowFlags() | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
         w.show()
+        w.activateWindow()
         sys.exit(0)
 
     form = MainApp()
+
     # Show the form
     form.show()
 
-    if getattr(sys, 'frozen', False):
+    if hasattr(sys, 'frozen'):
         pyi_splash.close()
 
+    form.activateWindow()
     # and execute the app
-    app.exec_()
+    app.exec()
 
 
 # start of the program

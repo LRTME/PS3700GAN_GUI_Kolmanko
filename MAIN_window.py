@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-# Import the PyQt5 module we'll need
-from PyQt5 import QtWidgets, QtGui
-# We need sys so that we can pass argv to QApplication
+from PySide6 import QtWidgets, QtGui
 import sys
 import com_monitor
 import struct
@@ -9,12 +7,12 @@ import math
 import os
 
 # GUI GUI elements
-import GUI_main_window
-import Basic_GUI_COM_settings
-import Basic_GUI_COM_statistics
-import Basic_GUI_about
 import LOG_mod
-import REF_gen
+import COM_settings
+import COM_statistics
+import HELP_about
+import GUI_main_window
+import SIG_gen
 import DLOG_gen
 import AUT_measure
 
@@ -50,22 +48,23 @@ class AppMainClass(QtWidgets.QMainWindow, GUI_main_window.Ui_MainWindow):
         self.actionConnect_Disconnect.triggered.connect(self.com_meni_clicked)
         self.actionCom_statistics.triggered.connect(self.com_statistics_clicked)
         self.actionCom_log.triggered.connect(self.com_log_clicked)
+        self.actionAutomatic_Measurements.triggered.connect(self.com_auto_measurements_clicked)
         self.actionAbout.triggered.connect(self.com_about_clicked)
 
         # LOG
         self.com_log_dialog = LOG_mod.Logger(self)
 
         # set up the dialogs
-        self.com_stat_dialog = Basic_GUI_COM_statistics.ComStat(self)
-        self.com_dialog = Basic_GUI_COM_settings.ComDialog(self)
+        self.com_stat_dialog = COM_statistics.ComStat(self)
+        self.com_dialog = COM_settings.ComDialog(self)
         self.com_dialog.try_connect_at_startup(serial_number)
-        self.about_dialog = Basic_GUI_about.About(self)
+        self.about_dialog = HELP_about.About(self)
 
         # DLOG_GEN
         self.dlog_gen = DLOG_gen.DLOG_viewer(self)
 
         # refgen init
-        self.ref_gen = REF_gen.REF_generator(self)
+        self.ref_gen = SIG_gen.SIG_generator(self)
 
         # automatic measurements
         self.aut_measure = AUT_measure.AUT_measurement(self)
@@ -92,6 +91,9 @@ class AppMainClass(QtWidgets.QMainWindow, GUI_main_window.Ui_MainWindow):
 
     def com_log_clicked(self):
         self.com_log_dialog.show()
+
+    def com_auto_measurements_clicked(self):
+        self.aut_measure.show()
 
     def com_about_clicked(self):
         self.about_dialog.show()

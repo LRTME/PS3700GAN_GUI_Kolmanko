@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-import Basic_GUI_about_dialog
+import GUI_about_dialog
 
 import os
 
 # Import the PyQt4 module we'll need
-from PyQt5 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 
 
 # About dialog
-class About(QtWidgets.QDialog, Basic_GUI_about_dialog.Ui_Dialog):
+class About(QtWidgets.QDialog, GUI_about_dialog.Ui_Dialog):
     def __init__(self, parent=None):
         QtWidgets.QDialog.__init__(self, parent)
         # This is defined in GUI_design.py file automatically
@@ -22,13 +22,13 @@ class About(QtWidgets.QDialog, Basic_GUI_about_dialog.Ui_Dialog):
 
         # check if git_commit_sha.txt file exist
         # if it doesn't exist, create it
-        if not os.path.exists('git_commit_sha.txt'):
-            with open('git_commit_sha.txt', 'w') as f:
+        if not os.path.exists(os.path.join(parent.app_path, 'git_commit_sha.txt')):
+            with open(os.path.join(parent.app_path, 'git_commit_sha.txt'), 'w') as f:
                 f.write('NoCommit\n')
-        with open('git_commit_sha.txt') as f:
+        with open(os.path.join(parent.app_path, 'git_commit_sha.txt')) as f:
             sha = f.readline().strip()
         self.lbl_git_sha.setText("Git SHA: "+sha)
 
-    # ce pritisnem OK potem zaprem okno
+    # close on Ok
     def ok_click(self):
         self.close()

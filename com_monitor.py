@@ -8,10 +8,11 @@ import traceback
 import time
 import cobs
 import struct
-from PyQt5 import QtCore
+from PySide6 import QtCore
 import CRC16
 import inspect
 import sys
+
 
 class ComMonitor(QtCore.QObject, serial.threaded.Packetizer):
 
@@ -23,11 +24,11 @@ class ComMonitor(QtCore.QObject, serial.threaded.Packetizer):
     bytes_received = 0
 
     crc_handler_function = False
-    crc_print_signal = QtCore.pyqtSignal()
+    crc_print_signal = QtCore.Signal()
 
     crc_data = queue.LifoQueue()
 
-    tx_handler_signal = QtCore.pyqtSignal()
+    tx_handler_signal = QtCore.Signal()
 
     tx_queue = queue.Queue()
 
@@ -135,7 +136,11 @@ class ComMonitor(QtCore.QObject, serial.threaded.Packetizer):
         self.ser.baudrate = baudrate
         self.ser.port = portname
         self.ser.stopbits = 2
-        self.ser.open()
+
+        try:
+            self.ser.open()
+        except Exception:
+            return False
 
         # reset packet counter
         self.packets_sent = 0
@@ -299,7 +304,7 @@ class ComMonitor(QtCore.QObject, serial.threaded.Packetizer):
 
 class RxWorker(QtCore.QObject):
     # signal to bind RxWorker with rx handler
-    rx_handler_signal = QtCore.pyqtSignal()
+    rx_handler_signal = QtCore.Signal()
 
     def __init__(self, rx_function):
         # QT init - for signal
