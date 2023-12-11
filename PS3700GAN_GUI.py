@@ -24,6 +24,7 @@ COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 states = [("Startup", COLOR_YELLOW), ("Standby_cold", COLOR_YELLOW), ("Standby_hot", COLOR_YELLOW),
           ("Work", COLOR_GREEN), ("Fault_sensed", COLOR_RED), ("Fault", COLOR_RED)]
 
+
 class MainApp(MAIN_window.AppMainClass):
 
     def __init__(self, parent=None):
