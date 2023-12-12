@@ -5,7 +5,7 @@ splash_text = "Basic_GUI, Mitja Nemec\n"
 if hasattr(sys, 'frozen'):
     import pyi_splash
     pyi_splash.update_text(splash_text + "Importing modules")
-
+import faulthandler
 import struct
 import MAIN_window
 import os
@@ -42,7 +42,7 @@ class MainApp(MAIN_window.AppMainClass):
         self.ping_count = 0
 
         self.commonitor.connect_rx_handler(0x0900, self.received_ping)
-        self.commonitor.connect_rx_handler(0x0D01, self.state_received)
+        self.commonitor.connect_rx_handler(0x0D01, self.measurements_received)
         self.commonitor.connect_rx_handler(0x0D02, self.settings_received)
 
         # connect buttons
@@ -242,7 +242,7 @@ class MainApp(MAIN_window.AppMainClass):
         self.cb_leg6.setChecked(legs & 0x20)
         self.cb_leg6.blockSignals(False)
 
-    def state_received(self):
+    def measurements_received(self):
         # grab the data
         data = self.commonitor.get_data()
 
@@ -267,6 +267,8 @@ class MainApp(MAIN_window.AppMainClass):
 
         state = struct.unpack('<h', data[52:54])[0]
         mode = struct.unpack('<h', data[54:56])[0]
+
+        fault_flags = struct.unpack('<h', data[56:58])[0]
 
         self.lbl_cpu_load.setText("{:.1f}".format(cpu_load))
 
@@ -311,6 +313,29 @@ class MainApp(MAIN_window.AppMainClass):
             self.lbl_mode.setText("Normal")
             self.sld_phantom.setDisabled(True)
             self.lbl_phantom.setDisabled(True)
+
+        # fault flags
+        """   bool    overcurrent:1;
+              bool    undervoltage:1;
+              bool    overvoltage:1;
+              bool    cpu_overrun:1;
+              bool    fault_registered:1;"""
+        if fault_flags & 0x0001:
+            self.lbl_flt_overcurrent.setStyleSheet(COLOR_RED)
+        else:
+            self.lbl_flt_overcurrent.setStyleSheet(COLOR_DEFAULT)
+        if fault_flags & 0x0002:
+            self.lbl_flt_undervoltage.setStyleSheet(COLOR_RED)
+        else:
+            self.lbl_flt_undervoltage.setStyleSheet(COLOR_DEFAULT)
+        if fault_flags & 0x0004:
+            self.lbl_flt_overvoltage.setStyleSheet(COLOR_RED)
+        else:
+            self.lbl_flt_overvoltage.setStyleSheet(COLOR_DEFAULT)
+        if fault_flags & 0x0008:
+            self.lbl_flt_cpu_overrun.setStyleSheet(COLOR_RED)
+        else:
+            self.lbl_flt_cpu_overrun.setStyleSheet(COLOR_DEFAULT)
 
 
 # glavna funkcija
@@ -359,5 +384,6 @@ def main():
 # start of the program
 # if we're running file directly and not importing it
 if __name__ == '__main__':
+    faulthandler.enable()
     main()
 
