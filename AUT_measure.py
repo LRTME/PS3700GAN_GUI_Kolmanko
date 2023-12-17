@@ -216,11 +216,6 @@ class AUT_measurement(QtCore.QObject):
         primary_actual = self.primary_start
         secondary_actual = self.secondary_start
 
-        self.ITech_IT6000C.set_system_remote()
-        self.ITech_IT6000C.set_output(state = 1)
-        self.ITech_IT6000C.set_system_local()
-        time.sleep(7)
-
         input_voltage_list = [24, 36, 48]
 
         self.measurement_number = 1
@@ -228,6 +223,15 @@ class AUT_measurement(QtCore.QObject):
         # iterate over speed
         for input_voltage in input_voltage_list:
             self.input_voltage = input_voltage
+            self.ITech_IT6000C.set_system_remote()
+            self.ITech_IT6000C.set_output(state=1)
+            self.ITech_IT6000C.set_system_local()
+            IT6000C_output_voltage = self.ITech_IT6000C.get_output_voltage()
+            # checking if output voltage has reached desired voltage
+            while IT6000C_output_voltage < (self.input_voltage * 0.95):
+                IT6000C_output_voltage = self.ITech_IT6000C.get_output_voltage()
+            time.sleep(self.sleep_timer)
+
 
             while primary_actual <= self.primary_stop:
                 # update new value
@@ -356,54 +360,66 @@ class AUT_measurement(QtCore.QObject):
                         array_to_write[:len(c), i] = c
 
                     """save measured data """
+                    itech1_values = (str(scalar_value_itech_1_voltage) + ";" +
+                                     str(scalar_value_itech_1_current) + ";" +
+                                     str(scalar_value_itech_1_power))
 
-                    filename_actual = self.filename_base + "_" + str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
-                        secondary_actual) + "." + self.filename_ext
+                    itech2_values = (str(scalar_value_itech_2_voltage) + ";" +
+                                     str(scalar_value_itech_2_current) + ";" +
+                                     str(scalar_value_itech_2_power))
+
+                    kinetiq1_values = (str(scalar_value_kinetiq_1_voltage) + ";" +
+                                       str(scalar_value_kinetiq_1_current) + ";" +
+                                       str(scalar_value_kinetiq_1_power))
+
+                    kinetiq2_values = (str(scalar_value_kinetiq_2_voltage) + ";" +
+                                       str(scalar_value_kinetiq_2_current) + ";" +
+                                       str(scalar_value_kinetiq_2_power))
+
+                    filename_actual = (self.filename_base + "_" +
+                                       str(self.input_voltage) + "_" +
+                                       str(primary_actual) + "_" +
+                                       str(secondary_actual) + "." +
+                                       self.filename_ext)
                     np.savetxt(filename_actual, array_to_write, delimiter=";")
 
-                    filename_actual_rigol = self.filename_base + "_rigol_" + str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
-                        secondary_actual) + "." + self.filename_ext
+                    filename_actual_rigol = (self.filename_base + "_rigol_" +
+                                             str(self.input_voltage) + "_" +
+                                             str(primary_actual) + "_" +
+                                             str(secondary_actual) + "." +
+                                             self.filename_ext)
                     np.savetxt(filename_actual_rigol, arraylist_rigol_plot, delimiter=";")
 
-                    filename_actual_itech_1_voltage = self.filename_base + "_itech_1_voltage_" + str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
-                        secondary_actual) + "." + self.filename_ext
-                    np.savetxt(filename_actual_itech_1_voltage, scalar_value_itech_1_voltage, delimiter=";")
+                    filename_actual_itech_1_voltage = (self.filename_base + "_itech_1_" +
+                                                       str(self.input_voltage) + "_" +
+                                                       str(primary_actual) + "_" +
+                                                       str(secondary_actual) + "." +
+                                                       self.filename_ext)
+                    np.savetxt(filename_actual_itech_1_voltage, itech1_values, delimiter=";")
 
-                    filename_actual_itech_1_current = self.filename_base + "_itech_1_current_"+ str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
-                        secondary_actual) + "." + self.filename_ext
-                    np.savetxt(filename_actual_itech_1_current, scalar_value_itech_1_current, delimiter=";")
+                    filename_actual_itech_2_voltage = (self.filename_base + "_itech_2_"+
+                                                       str(self.input_voltage) + "_" +
+                                                       str(primary_actual) + "_" + str(secondary_actual) + "." +
+                                                       self.filename_ext)
+                    np.savetxt(filename_actual_itech_2_voltage, itech2_values, delimiter=";")
 
-                    filename_actual_itech_2_voltage = self.filename_base + "_itech_2_voltage_"+ str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
-                        secondary_actual) + "." + self.filename_ext
-                    np.savetxt(filename_actual_itech_2_voltage, scalar_value_itech_2_voltage, delimiter=";")
+                    filename_actual_kinetiq_1_voltage = (self.filename_base + "_kinetiq_1_"+
+                                                         str(self.input_voltage) + "_" +
+                                                         str(primary_actual) + "_" +
+                                                         str(secondary_actual) + "." +
+                                                         self.filename_ext)
+                    np.savetxt(filename_actual_kinetiq_1_voltage, kinetiq1_values, delimiter=";")
 
-                    filename_actual_itech_2_current = self.filename_base + "_itech_2_current_" + str(self.input_voltage) + "_"+ str(primary_actual) + "_" + str(
-                        secondary_actual) + "." + self.filename_ext
-                    np.savetxt(filename_actual_itech_2_current, scalar_value_itech_2_current, delimiter=";")
-
-                    filename_actual_kinetiq_1_voltage = self.filename_base + "_kinetiq_1_voltage_"+ str(self.input_voltage) + "_" + str(primary_actual) + "_" + str(
-                        secondary_actual) + "." + self.filename_ext
-                    np.savetxt(filename_actual_kinetiq_1_voltage, scalar_value_kinetiq_1_voltage, delimiter=";")
-
-                    filename_actual_kinetiq_1_current = self.filename_base + "_kinetiq_1_current_"+ str(self.input_voltage) + "_" + str(
-                        primary_actual) + "_" + str(
-                        secondary_actual) + "." + self.filename_ext
-                    np.savetxt(filename_actual_kinetiq_1_current, scalar_value_kinetiq_1_current, delimiter=";")
-
-                    filename_actual_kinetiq_2_voltage = self.filename_base + "_kinetiq_2_voltage_"+ str(self.input_voltage) + "_" + str(
-                        primary_actual) + "_" + str(
-                        secondary_actual) + "." + self.filename_ext
-                    np.savetxt(filename_actual_kinetiq_2_voltage, scalar_value_kinetiq_2_voltage, delimiter=";")
-
-                    filename_actual_kinetiq_2_current = self.filename_base + "_kinetiq_2_current_"+ str(self.input_voltage) + "_" + str(
-                    primary_actual) + "_" + str(
-                    secondary_actual) + "." + self.filename_ext
-                    np.savetxt(filename_actual_kinetiq_2_current, scalar_value_kinetiq_2_current, delimiter=";")
+                    filename_actual_kinetiq_2_voltage = (self.filename_base + "_kinetiq_2_"+
+                                                         str(self.input_voltage) + "_" +
+                                                         str(primary_actual) + "_" +
+                                                         str(secondary_actual) + "." +
+                                                         self.filename_ext)
+                    np.savetxt(filename_actual_kinetiq_2_voltage, kinetiq2_values, delimiter=";")
 
                     self.Rigol_DS1000Z.run()
                     self.ITech_IT9121_1.trigger(trigger_mode='OFF')
                     self.ITech_IT9121_2.trigger(trigger_mode='OFF')
-
                     self.KinetiQ_PPA5530.set_data_hold(hold='OFF')
 
                     # prep the next value of current

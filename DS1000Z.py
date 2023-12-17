@@ -494,9 +494,13 @@ class DS1000Z:
         RESULT: WORKING
         """
 
+        # Interpret the channel number
         channel = self._interpret_channel(channel)
+        # Set the waveform source based on the interpreted channel
         self.set_waveform_source(channel)
+        # Set the waveform format to BYTE
         self.set_waveform_format("BYTE")
+        # Retrieve waveform details like format, type, etc.
         (
             format,
             type,
@@ -509,22 +513,40 @@ class DS1000Z:
             y_origin,
             y_reference,
         ) = self.get_waveform_preamble()
+        # Set the start and stop points for data capture
         self.set_waveform_start(1)
         self.set_waveform_stop(number_of_points)
+        # Retrieve the waveform data
         tmp_buff = self.get_waveform_data()
+        # Determine the number of header bytes and data bytes
+        """
+        "tmp_buff" contains the raw data retrieved from the instrument or source.
+        "tmp_buff[1]" accesses a specific byte in the data.
+        This integer represents the number of header bytes
+        + 2 is the protocol or data format standard that adds additional number of bytes reserved for headers beyond
+        what's explicitly indicated by the converted integer byte.
+        """
         n_header_bytes = int(chr(tmp_buff[1])) + 2
         n_data_bytes = int(tmp_buff[2:n_header_bytes].decode("ascii"))
+        # Extract the data from the buffer
         buff = tmp_buff[n_header_bytes: n_header_bytes + n_data_bytes]
+        # Ensure the extracted data length matches the expected number of points
         assert len(buff) == points
+        # Unpack the data into samples
         samples = list(struct.unpack(str(len(buff)) + "B", buff))
+        # Adjust the samples based on y-axis properties
         samples = [
             (sample - y_origin - y_reference) * y_increment for sample in samples
         ]
+        # Retrieve timebase scale and offset
         timebase_scale = self.get_timebase_scale()
         timebase_offset = self.get_timebase_offset()
+        # Generate the x-axis values (time in seconds)
         x_axis = [
             i * timebase_scale / 100.0 + timebase_offset
             for i in range(-len(samples) // 2, len(samples) // 2)
         ]
+        # Adjust x-axis values based on the number of points
         x_axis = [x * (abs(x_axis[1]) + x_axis[len(x_axis) - 1]) / number_of_points for x in range(len(x_axis))]
+        # Return the x-axis (time in seconds) and samples (amplitude values)
         return x_axis, samples  # x_axis is in seconds.
