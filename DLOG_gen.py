@@ -109,16 +109,16 @@ class DLOG_viewer():
         self.app.points_spin.setOpts(value=200, dec=True, step=1, minStep=1, int=True)
         self.app.points_spin.setMinimum(10)
         self.app.points_spin.setMaximum(10000)
-        self.app.points_spin.valueChanged.connect(self.points_changed)
+        self.app.points_spin.editingFinished.connect(self.points_changed)
         self.app.prescalar_spin.setOpts(value=1, dec=True, step=1, minStep=1, int=True)
         self.app.prescalar_spin.setMinimum(1)
         self.app.prescalar_spin.setMaximum(100)
-        self.app.prescalar_spin.valueChanged.connect(self.prescaler_changed)
+        self.app.prescalar_spin.editingFinished.connect(self.prescaler_changed)
         self.app.trigger.currentIndexChanged.connect(self.trigger_changed)
 
         self.samp_freq = 20000
 
-        # zahtevam statusne podatke za data logger in generator signalov
+        # request initial settings
         # if com port is open request parameters
         if self.app.commonitor.is_port_open():
             self.app.commonitor.send_packet(0x092A, None)
@@ -421,14 +421,12 @@ class DLOG_viewer():
         # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
-    # ob spremembi triggerja
     def trigger_changed(self):
         # send packet
         self.app.commonitor.send_packet(0x0922, struct.pack('<h', self.app.trigger.currentIndex()))
         # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
-    # ob pritisku na ch 1
     def ch1_state_changed(self):
         if self.app.ch1_chkbox.isChecked():
             self.app.commonitor.send_packet(0x0911, struct.pack('<h', 0x0001))
@@ -437,7 +435,6 @@ class DLOG_viewer():
         # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
-    # ob pritisku na ch 2
     def ch2_state_changed(self):
         if self.app.ch2_chkbox.isChecked():
             self.app.commonitor.send_packet(0x0912, struct.pack('<h', 0x0001))
@@ -446,7 +443,6 @@ class DLOG_viewer():
         # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
-    # ob pritisku na ch 3
     def ch3_state_changed(self):
         if self.app.ch3_chkbox.isChecked():
             self.app.commonitor.send_packet(0x0913, struct.pack('<h', 0x0001))
@@ -455,7 +451,6 @@ class DLOG_viewer():
         # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
-    # ob pritisku na ch 4
     def ch4_state_changed(self):
         if self.app.ch4_chkbox.isChecked():
             self.app.commonitor.send_packet(0x0914, struct.pack('<h', 0x0001))
@@ -464,7 +459,6 @@ class DLOG_viewer():
         # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
-    # ob pritisku na ch 5
     def ch5_state_changed(self):
         if self.app.ch5_chkbox.isChecked():
             self.app.commonitor.send_packet(0x0915, struct.pack('<h', 0x0001))
@@ -473,7 +467,6 @@ class DLOG_viewer():
         # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
-    # ob pritisku na ch 6
     def ch6_state_changed(self):
         if self.app.ch6_chkbox.isChecked():
             self.app.commonitor.send_packet(0x0916, struct.pack('<h', 0x0001))
@@ -482,7 +475,6 @@ class DLOG_viewer():
         # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
-    # ob pritisku na ch 7
     def ch7_state_changed(self):
         if self.app.ch7_chkbox.isChecked():
             self.app.commonitor.send_packet(0x0917, struct.pack('<h', 0x0001))
@@ -491,7 +483,6 @@ class DLOG_viewer():
         # request confirmation
         self.app.commonitor.send_packet(0x092A, None)
 
-    # ob pritisku na ch 8
     def ch8_state_changed(self):
         if self.app.ch8_chkbox.isChecked():
             self.app.commonitor.send_packet(0x0918, struct.pack('<h', 0x0001))

@@ -12,11 +12,11 @@ class SIG_generator():
         self.app.slew_spin.setOpts(value=100, dec=True, step=1, minStep=1, int=True, decimals=4)
         self.app.slew_spin.setMinimum(1)
         self.app.slew_spin.setMaximum(10000)
-        self.app.slew_spin.valueChanged.connect(self.slew_changed)
-        self.app.freq_spin.valueChanged.connect(self.ref_freq_changed)
+        self.app.slew_spin.editingFinished.connect(self.slew_changed)
+        self.app.freq_spin.editingFinished.connect(self.ref_freq_changed)
 
         self.ref_range = 1
-        self.app.amp_spin.valueChanged.connect(self.ref_amp_spin_changed)
+        self.app.amp_spin.editingFinished.connect(self.ref_amp_spin_changed)
         self.app.amp_spin.setSingleStep(0.01)
         self.app.sld_amp.valueChanged[int].connect(self.ref_amp_slider_changed)
         self.app.sld_amp.sliderReleased.connect(self.request_sig_gen_params)
@@ -31,12 +31,12 @@ class SIG_generator():
         self.app.harmonic_spin.setOpts(value=1, dec=True, step=1, minStep=1, int=False)
         self.app.harmonic_spin.setMinimum(1)
         self.app.harmonic_spin.setMaximum(100)
-        self.app.harmonic_spin.valueChanged.connect(self.ref_harm_changed)
+        self.app.harmonic_spin.editingFinished.connect(self.ref_harm_changed)
         self.app.mode_sel.currentIndexChanged.connect(self.mode_changed)
         self.app.cycle_number_spin.setOpts(value=1, dec=True, step=1, minStep=1, int=False)
         self.app.cycle_number_spin.setMinimum(1)
         self.app.cycle_number_spin.setMaximum(100)
-        self.app.cycle_number_spin.valueChanged.connect(self.ref_cycle_changed)
+        self.app.cycle_number_spin.editingFinished.connect(self.ref_cycle_changed)
         self.app.btn_ref_single_shot.clicked.connect(self.btn_single_shot_clicked)
 
         # if com port is open, request parameters for initial update of GUI

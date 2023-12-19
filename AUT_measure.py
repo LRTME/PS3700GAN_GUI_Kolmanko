@@ -85,7 +85,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
         self.lbl_secondary.setText(str(round(value / 100, 2)))
         self.sld_secondary.blockSignals(True)
         self.sld_secondary.setValue(value)
-        self.sld_secondary.blockSignals(True)
+        self.sld_secondary.blockSignals(False)
 
     def connection_error_message_box(self, device_name):
         msg = QMessageBox()
