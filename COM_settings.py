@@ -151,7 +151,7 @@ class ComDialog(QtWidgets.QDialog, GUI_com_settings_dialog.Ui_Dialog):
     def com_click(self):
         # if port is open, close it
         if self.app.commonitor.is_port_open():
-            self.app.commonitor.close_port()
+            status = self.app.commonitor.close_port()
             # signal into the GUI
             self.btn_connect.setText("Connect")
             self.app.statusbar.showMessage("Com port je zaprt", 2000)
@@ -167,8 +167,14 @@ class ComDialog(QtWidgets.QDialog, GUI_com_settings_dialog.Ui_Dialog):
             chosen_port = self.com_select.currentText()
             # then open it
             if chosen_port != "":
-                self.app.commonitor.open_port(chosen_port, BAUDRATE)
-                if self.app.commonitor.is_port_open():
+                status = self.app.commonitor.open_port(chosen_port, BAUDRATE)
+                # if port cannot be opened, let the user know
+                if status is False:
+                    w = QtWidgets.QWidget()
+                    QtWidgets.QMessageBox.about(w, "Error", "Selected COM port could not be opened")
+                    w.setWindowFlags(w.windowFlags() | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
+                    w.show()
+                else:
                     # disable port and baud selection
                     self.com_select.setDisabled(True)
                     self.baud_select.setDisabled(True)
@@ -180,10 +186,7 @@ class ComDialog(QtWidgets.QDialog, GUI_com_settings_dialog.Ui_Dialog):
                     # start periodic ping timer
                     self.periodic_timer.start(1000)
 
-                else:
-                    self.app.commonitor.close_port()
-                    self.btn_connect.setText("Connect")
-                    self.periodic_timer.stop()
+
             else:
                 self.app.statusbar.showMessage("Problem pri odpiranju COM porta", 2000)
 

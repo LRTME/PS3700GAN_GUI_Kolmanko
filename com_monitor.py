@@ -37,6 +37,9 @@ class ComMonitor(QtCore.QObject, serial.threaded.Packetizer):
     def set_object(self, obj):
         self._object_ref = obj
 
+    def __del__(self):
+        self.packetizer.stop()
+
     def __init__(self):
         # Qt init
         QtCore.QObject.__init__(self)
