@@ -5,7 +5,6 @@ splash_text = "Basic_GUI, Mitja Nemec\n"
 if hasattr(sys, 'frozen'):
     import pyi_splash
     pyi_splash.update_text(splash_text + "Importing modules")
-import faulthandler
 import struct
 import MAIN_window
 import os
@@ -384,6 +383,5 @@ def main():
 # start of the program
 # if we're running file directly and not importing it
 if __name__ == '__main__':
-    faulthandler.enable()
     main()
 
