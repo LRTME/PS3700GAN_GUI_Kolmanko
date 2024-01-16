@@ -296,20 +296,26 @@ class AUT_measurement(QtCore.QObject):
                     self.KinetiQ_PPA5530.set_data_hold(hold = 'ON')
                     time.sleep(self.sleep_timer)
 
-
                     """ grab measured data """
                     rigol_time, rigol_values = self.Rigol_DS1000Z.capture_waveform(channel = 1,
                                                                                    number_of_points=1200)
 
                     ITech_1_voltage = self.ITech_IT9121_1.get_base_source_voltage(voltage = 'DC')
                     ITech_1_current = self.ITech_IT9121_1.get_base_source_current(current ='DC')
+                    ITech_1_power = self.ITech_IT9121_1.get_active_power()
+
                     ITech_2_voltage = self.ITech_IT9121_2.get_base_source_voltage(voltage='DC')
                     ITech_2_current = self.ITech_IT9121_2.get_base_source_current(current='DC')
+                    ITech_2_power = self.ITech_IT9121_2.get_active_power()
 
                     KinetiQ_PPA5530_voltage_1 = self.KinetiQ_PPA5530.get_voltage(phase = 3)
                     KinetiQ_PPA5530_voltage_2 = self.KinetiQ_PPA5530.get_voltage(phase=1)
+
                     KinetiQ_PPA5530_current_1 = self.KinetiQ_PPA5530.get_current(phase=3)
                     KinetiQ_PPA5530_current_2 = self.KinetiQ_PPA5530.get_current(phase=1)
+
+                    KinetiQ_PPA5530_power_1 = self.KinetiQ_PPA5530.get_power(phase = 3)
+                    KinetiQ_PPA5530_power_2 = self.KinetiQ_PPA5530.get_power(phase=1)
 
                     # get the longest array
 
@@ -324,15 +330,19 @@ class AUT_measurement(QtCore.QObject):
 
                     scalar_value_itech_1_voltage = [float(ITech_1_voltage)]
                     scalar_value_itech_1_current = [float(ITech_1_current)]
+                    scalar_value_itech_1_power = [float(ITech_1_power)]
 
                     scalar_value_itech_2_voltage = [float(ITech_2_voltage)]
                     scalar_value_itech_2_current = [float(ITech_2_current)]
+                    scalar_value_itech_2_power = [float(ITech_2_power)]
 
                     scalar_value_kinetiq_1_voltage = [float(KinetiQ_PPA5530_voltage_1)]
                     scalar_value_kinetiq_1_current = [float(KinetiQ_PPA5530_current_1)]
+                    scalar_value_kinetiq_1_power = [float(KinetiQ_PPA5530_power_1)]
 
                     scalar_value_kinetiq_2_voltage = [float(KinetiQ_PPA5530_voltage_2)]
                     scalar_value_kinetiq_2_current = [float(KinetiQ_PPA5530_current_2)]
+                    scalar_value_kinetiq_2_power = [float(KinetiQ_PPA5530_power_2)]
 
 
                     """
