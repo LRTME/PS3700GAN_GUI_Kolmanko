@@ -63,6 +63,19 @@ class MainApp(MAIN_window.AppMainClass):
         self.le_freq.editingFinished.connect(self.freq_set)
         self.le_dead_time.editingFinished.connect(self.dead_time_set)
 
+        self.sp_sign_leg_1.valueChanged.connect(self.sp_sign_leg_1_changed)
+        self.sp_sign_leg_2.valueChanged.connect(self.sp_sign_leg_2_changed)
+        self.sp_sign_leg_3.valueChanged.connect(self.sp_sign_leg_3_changed)
+        self.sp_sign_leg_4.valueChanged.connect(self.sp_sign_leg_4_changed)
+        self.sp_sign_leg_5.valueChanged.connect(self.sp_sign_leg_5_changed)
+        self.sp_sign_leg_6.valueChanged.connect(self.sp_sign_leg_6_changed)
+
+        self.spb_shift_leg_2.valueChanged.connect(self.spb_shift_leg_2_changed)
+        self.spb_shift_leg_3.valueChanged.connect(self.spb_shift_leg_3_changed)
+        self.spb_shift_leg_4.valueChanged.connect(self.spb_shift_leg_4_changed)
+        self.spb_shift_leg_5.valueChanged.connect(self.spb_shift_leg_5_changed)
+        self.spb_shift_leg_6.valueChanged.connect(self.spb_shift_leg_6_changed)
+
         # connect max current line edit
         self.le_amp_norm.editingFinished.connect(self.amplitude_norm_set)
         self.norm_max = 5
@@ -87,6 +100,17 @@ class MainApp(MAIN_window.AppMainClass):
         self.cb_leg4.setDisabled(True)
         self.cb_leg5.setDisabled(True)
         self.cb_leg6.setDisabled(True)
+        self.spb_shift_leg_2.setDisabled(True)
+        self.spb_shift_leg_3.setDisabled(True)
+        self.spb_shift_leg_4.setDisabled(True)
+        self.spb_shift_leg_5.setDisabled(True)
+        self.spb_shift_leg_6.setDisabled(True)
+        self.sp_sign_leg_1.setDisabled(True)
+        self.sp_sign_leg_2.setDisabled(True)
+        self.sp_sign_leg_3.setDisabled(True)
+        self.sp_sign_leg_4.setDisabled(True)
+        self.sp_sign_leg_5.setDisabled(True)
+        self.sp_sign_leg_6.setDisabled(True)
 
     def enable_modifications(self):
         self.le_freq.setEnabled(True)
@@ -97,6 +121,72 @@ class MainApp(MAIN_window.AppMainClass):
         self.cb_leg4.setEnabled(True)
         self.cb_leg5.setEnabled(True)
         self.cb_leg6.setEnabled(True)
+        self.spb_shift_leg_2.setEnabled(True)
+        self.spb_shift_leg_3.setEnabled(True)
+        self.spb_shift_leg_4.setEnabled(True)
+        self.spb_shift_leg_5.setEnabled(True)
+        self.spb_shift_leg_6.setEnabled(True)
+        self.sp_sign_leg_1.setEnabled(True)
+        self.sp_sign_leg_2.setEnabled(True)
+        self.sp_sign_leg_3.setEnabled(True)
+        self.sp_sign_leg_4.setEnabled(True)
+        self.sp_sign_leg_5.setEnabled(True)
+        self.sp_sign_leg_6.setEnabled(True)
+
+    def sp_sign_leg_1_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_1.value())
+        self.commonitor.send_packet(0x0D11, data)
+
+    def sp_sign_leg_2_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_2.value())
+        self.commonitor.send_packet(0x0D12, data)
+
+    def sp_sign_leg_3_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_3.value())
+        self.commonitor.send_packet(0x0D13, data)
+
+    def sp_sign_leg_4_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_4.value())
+        self.commonitor.send_packet(0x0D14, data)
+
+    def sp_sign_leg_5_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_5.value())
+        self.commonitor.send_packet(0x0D15, data)
+
+    def sp_sign_leg_6_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_6.value())
+        self.commonitor.send_packet(0x0D16, data)
+
+    def spb_shift_leg_2_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.spb_shift_leg_2.value())
+        self.commonitor.send_packet(0x0D22, data)
+
+    def spb_shift_leg_3_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.spb_shift_leg_3.value())
+        self.commonitor.send_packet(0x0D23, data)
+
+    def spb_shift_leg_4_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.spb_shift_leg_4.value())
+        self.commonitor.send_packet(0x0D24, data)
+
+    def spb_shift_leg_5_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.spb_shift_leg_5.value())
+        self.commonitor.send_packet(0x0D25, data)
+
+    def spb_shift_leg_6_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.spb_shift_leg_6.value())
+        self.commonitor.send_packet(0x0D26, data)
 
     def legs_changed(self):
         num = 0
@@ -198,7 +288,21 @@ class MainApp(MAIN_window.AppMainClass):
 
         sw_freq = round(struct.unpack('<f', data[8:12])[0], 2)
         dead_time = round(struct.unpack('<f', data[12:16])[0], 2)
-        legs = round(struct.unpack('<h', data[16:18])[0], 2)
+        shift1 = struct.unpack('<f', data[16:20])[0]
+        shift2 = struct.unpack('<f', data[20:24])[0]
+        shift3 = struct.unpack('<f', data[24:28])[0]
+        shift4 = struct.unpack('<f', data[28:32])[0]
+        shift5 = struct.unpack('<f', data[32:36])[0]
+        shift6 = struct.unpack('<f', data[36:40])[0]
+
+        sign1 = struct.unpack('<f', data[40:44])[0]
+        sign2 = struct.unpack('<f', data[44:48])[0]
+        sign3 = struct.unpack('<f', data[48:52])[0]
+        sign4 = struct.unpack('<f', data[52:56])[0]
+        sign5 = struct.unpack('<f', data[56:60])[0]
+        sign6 = struct.unpack('<f', data[60:64])[0]
+
+        legs = round(struct.unpack('<h', data[64:68])[0], 2)
 
         self.le_amp_norm.blockSignals(True)
         self.le_amp_norm.setText("{:.1f}".format(current_norm))
@@ -240,6 +344,54 @@ class MainApp(MAIN_window.AppMainClass):
         self.cb_leg6.blockSignals(True)
         self.cb_leg6.setChecked(legs & 0x20)
         self.cb_leg6.blockSignals(False)
+
+        self.spb_shift_leg_1.blockSignals(True)
+        self.spb_shift_leg_1.setValue(shift1)
+        self.spb_shift_leg_1.blockSignals(False)
+
+        self.spb_shift_leg_2.blockSignals(True)
+        self.spb_shift_leg_2.setValue(shift2)
+        self.spb_shift_leg_2.blockSignals(False)
+
+        self.spb_shift_leg_3.blockSignals(True)
+        self.spb_shift_leg_3.setValue(shift3)
+        self.spb_shift_leg_3.blockSignals(False)
+
+        self.spb_shift_leg_4.blockSignals(True)
+        self.spb_shift_leg_4.setValue(shift4)
+        self.spb_shift_leg_4.blockSignals(False)
+
+        self.spb_shift_leg_5.blockSignals(True)
+        self.spb_shift_leg_5.setValue(shift5)
+        self.spb_shift_leg_5.blockSignals(False)
+
+        self.spb_shift_leg_6.blockSignals(True)
+        self.spb_shift_leg_6.setValue(shift6)
+        self.spb_shift_leg_6.blockSignals(False)
+
+        self.sp_sign_leg_1.blockSignals(True)
+        self.sp_sign_leg_1.setValue(sign1)
+        self.sp_sign_leg_1.blockSignals(False)
+
+        self.sp_sign_leg_2.blockSignals(True)
+        self.sp_sign_leg_2.setValue(sign2)
+        self.sp_sign_leg_2.blockSignals(False)
+
+        self.sp_sign_leg_3.blockSignals(True)
+        self.sp_sign_leg_3.setValue(sign3)
+        self.sp_sign_leg_3.blockSignals(False)
+
+        self.sp_sign_leg_4.blockSignals(True)
+        self.sp_sign_leg_4.setValue(sign4)
+        self.sp_sign_leg_4.blockSignals(False)
+
+        self.sp_sign_leg_5.blockSignals(True)
+        self.sp_sign_leg_5.setValue(sign5)
+        self.sp_sign_leg_5.blockSignals(False)
+
+        self.sp_sign_leg_6.blockSignals(True)
+        self.sp_sign_leg_6.setValue(sign6)
+        self.sp_sign_leg_6.blockSignals(False)
 
     def measurements_received(self):
         # grab the data
