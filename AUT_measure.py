@@ -88,17 +88,17 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
         self.sld_secondary.blockSignals(False)
 
     def connection_error_message_box(self, device_name):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Critical)
         msg.setText("Error during connection establishment with device {0}.".format(device_name))
         msg.setWindowTitle("Connection Error")
-        msg.setStandardButtons(QMessageBox.Close | QMessageBox.Ok)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Close | QtWidgets.QMessageBox.Ok)
 
         # Add custom button text
-        close_button = msg.button(QMessageBox.Close)
+        close_button = msg.button(QtWidgets.QMessageBox.Close)
         close_button.setText("Close")
 
-        continue_button = msg.button(QMessageBox.Ok)
+        continue_button = msg.button(QtWidgets.QMessageBox.Ok)
         continue_button.setText("Continue")
 
         result = msg.exec_()
@@ -198,8 +198,6 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
             if is_return:
                 return
 
-
-
         # Block the button until measurements are done
         self.btn_start_measure.setEnabled(False)
         # start measurement thread (so that the GUI is not blocked
@@ -242,7 +240,6 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
             while IT6000C_output_voltage < (self.input_voltage * 0.95):
                 IT6000C_output_voltage = self.ITech_IT6000C.get_output_voltage()
             time.sleep(self.sleep_timer)
-
 
             while primary_actual <= self.primary_stop:
                 # exit if required
@@ -341,6 +338,15 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                                  self.app.dlog_gen.ch7_latest, self.app.dlog_gen.ch8_latest]
 
                     scalar_value = float(self.app.lbl_current.text())
+
+                    # Zero secondary between measurements if grabbing data takes a long time
+                    if self.secondary_zero:
+                        data = struct.pack('<f', (0 / 100))
+                        self.app.commonitor.send_packet(0x0E02, data)
+                        self.secondary_signal.emit(secondary_actual)
+
+                    # TODO save to file
+                    pcb_temp = float(self.app.lbl_temp_pcb.text())
 
                     arraylist_rigol_plot = np.array([rigol_values,rigol_time])
                     arraylist_rigol_plot = arraylist_rigol_plot.T
