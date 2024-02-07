@@ -94,7 +94,7 @@ class IT6000C():
         self.addr.write("VOLT {0}".format(voltage))
 
     def get_output_voltage(self):
-        return self.addr.query("VOLT?")
+        return self.addr.query("FETCh:VOLTage?")
 
     def set_output_state(self, state = "ON"):
         assert state in ["ON", "OFF", 1, 0]

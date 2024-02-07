@@ -178,18 +178,19 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                 return
 
         try:
-            self.ITech_IT9121_1 = IT9121.IT9121(ip_or_name = '212.235.184.164')
+            self.ITech_IT9121_1 = IT9121.IT9121(ip_or_name = '212.235.184.147')
         except ValueError:
             is_return = self.connection_error_message_box('ITech IT9121 (1)')
             if is_return:
                 return
 
         try:
-            self.ITech_IT9121_2 = IT9121.IT9121(ip_or_name = '212.235.184.155')
+            self.ITech_IT9121_2 = IT9121.IT9121(ip_or_name = '212.235.184.149')
         except ValueError:
             is_return = self.connection_error_message_box('ITech IT9121 (2)')
             if is_return:
                 return
+
 
         try:
             self.KinetiQ_PPA5530 = PPA5500.PPA5500(ip_or_name='212.235.184.182')
@@ -197,6 +198,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
             is_return = self.connection_error_message_box('KinetiQ PPA5530')
             if is_return:
                 return
+
 
         # Block the button until measurements are done
         self.btn_start_measure.setEnabled(False)
@@ -231,15 +233,21 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
 
         # iterate over speed
         for input_voltage in input_voltage_list:
+
             self.input_voltage = input_voltage
+
             self.ITech_IT6000C.set_system_remote()
+            self.ITech_IT6000C.set_output_voltage(input_voltage)
+            self.ITech_IT6000C.set_output_current(0)
             self.ITech_IT6000C.set_output(state=1)
             self.ITech_IT6000C.set_system_local()
-            IT6000C_output_voltage = self.ITech_IT6000C.get_output_voltage()
+
+            print("Waiting for power meter to reach desired value ({0}V)...".format(input_voltage))
+
+            IT6000C_output_voltage = float(self.ITech_IT6000C.get_output_voltage())
             # checking if output voltage has reached desired voltage
-            while IT6000C_output_voltage < (self.input_voltage * 0.95):
+            while float(IT6000C_output_voltage) < (float(self.input_voltage) * 0.99):
                 IT6000C_output_voltage = self.ITech_IT6000C.get_output_voltage()
-            time.sleep(self.sleep_timer)
 
             while primary_actual <= self.primary_stop:
                 # exit if required
@@ -277,9 +285,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     self.measurement_number = self.measurement_number + 1
 
                     self.ITech_IT6000C.set_system_remote()
-                    #print("IT6000C Error:",self.ITech_IT6000C.read_error())
                     #self.ITech_IT6000C.set_output(state = 0)
-
                     self.ITech_IT6000C.set_output_current(current = secondary_actual)
                     self.ITech_IT6000C.set_output_voltage(voltage=self.input_voltage)
                     self.ITech_IT6000C.set_system_local()
@@ -290,12 +296,16 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     self.Rigol_DS1000Z.run()  # set oscilloscope to RUN mode
                     self.Rigol_DS1000Z.set_memory_depth()
                     time.sleep(self.sleep_timer)
-                    self.Rigol_DS1000Z.autoscale_and_auto_offset(channel=1)
+                    #self.Rigol_DS1000Z.autoscale_and_auto_offset(channel=1)
+                    #self.Rigol_DS1000Z.autoscale_and_auto_offset(channel=2)
+                    #time.sleep(1)
 
                     self.ITech_IT9121_1.trigger(trigger_mode='OFF')
                     self.ITech_IT9121_2.trigger(trigger_mode='OFF')
 
+                    """
                     self.KinetiQ_PPA5530.set_data_hold(hold='OFF')
+                    """
 
                     #self.ITech_IT6000C.set_system_remote()
                     #self.ITech_IT6000C.set_output(state = 1)
@@ -304,23 +314,30 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     time.sleep(self.sleep_timer)
 
                     self.Rigol_DS1000Z.stop()
+
+                    self.ITech_IT9121_1.set_system_remote()
+                    self.ITech_IT9121_2.set_system_remote()
+
                     self.ITech_IT9121_1.trigger(trigger_mode='ON')
                     self.ITech_IT9121_2.trigger(trigger_mode='ON')
 
                     self.KinetiQ_PPA5530.set_data_hold(hold = 'ON')
+
                     time.sleep(self.sleep_timer)
 
                     """ grab measured data """
-                    rigol_time, rigol_values = self.Rigol_DS1000Z.capture_waveform(channel = 1,
-                                                                                   number_of_points=1200)
+                    rigol_time_ch1, rigol_values_ch1 = self.Rigol_DS1000Z.capture_waveform(channel = 1)
+                    rigol_time_ch2, rigol_values_ch2 = self.Rigol_DS1000Z.capture_waveform(channel=2)
 
                     ITech_1_voltage = self.ITech_IT9121_1.get_base_source_voltage(voltage = 'DC')
                     ITech_1_current = self.ITech_IT9121_1.get_base_source_current(current ='DC')
                     ITech_1_power = self.ITech_IT9121_1.get_active_power()
+                    self.ITech_IT9121_1.set_system_local()
 
                     ITech_2_voltage = self.ITech_IT9121_2.get_base_source_voltage(voltage='DC')
                     ITech_2_current = self.ITech_IT9121_2.get_base_source_current(current='DC')
                     ITech_2_power = self.ITech_IT9121_2.get_active_power()
+                    self.ITech_IT9121_2.set_system_local()
 
                     KinetiQ_PPA5530_voltage_1 = self.KinetiQ_PPA5530.get_voltage(phase = 3)
                     KinetiQ_PPA5530_voltage_2 = self.KinetiQ_PPA5530.get_voltage(phase=1)
@@ -337,7 +354,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                                  self.app.dlog_gen.ch4_latest, self.app.dlog_gen.ch5_latest, self.app.dlog_gen.ch6_latest,
                                  self.app.dlog_gen.ch7_latest, self.app.dlog_gen.ch8_latest]
 
-                    scalar_value = float(self.app.lbl_current.text())
+                    scalar_value = [float(self.app.lbl_current.text())]
 
                     # Zero secondary between measurements if grabbing data takes a long time
                     if self.secondary_zero:
@@ -346,26 +363,33 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                         self.secondary_signal.emit(secondary_actual)
 
                     # TODO save to file
-                    pcb_temp = float(self.app.lbl_temp_pcb.text())
+                    pcb_temp = [float(self.app.lbl_temp_pcb.text())]
 
-                    arraylist_rigol_plot = np.array([rigol_values,rigol_time])
-                    arraylist_rigol_plot = arraylist_rigol_plot.T
+                    arraylist_rigol_ch1_plot = np.array([rigol_values_ch1,rigol_time_ch1])
+                    arraylist_rigol_ch1_plot = arraylist_rigol_ch1_plot.T
 
-                    scalar_value_itech_1_voltage = [float(ITech_1_voltage)]
-                    scalar_value_itech_1_current = [float(ITech_1_current)]
-                    scalar_value_itech_1_power = [float(ITech_1_power)]
+                    arraylist_rigol_ch2_plot = np.array([rigol_values_ch2,rigol_time_ch2])
+                    arraylist_rigol_ch2_plot = arraylist_rigol_ch2_plot.T
 
-                    scalar_value_itech_2_voltage = [float(ITech_2_voltage)]
-                    scalar_value_itech_2_current = [float(ITech_2_current)]
-                    scalar_value_itech_2_power = [float(ITech_2_power)]
+                    scalar_value_itech_1_voltage = float(ITech_1_voltage)
+                    scalar_value_itech_1_current = float(ITech_1_current)
+                    scalar_value_itech_1_power = float(ITech_1_power)
+                    #itech1_values = [[scalar_value_itech_1_voltage],[scalar_value_itech_1_current],[scalar_value_itech_1_power]]
 
-                    scalar_value_kinetiq_1_voltage = [float(KinetiQ_PPA5530_voltage_1)]
-                    scalar_value_kinetiq_1_current = [float(KinetiQ_PPA5530_current_1)]
-                    scalar_value_kinetiq_1_power = [float(KinetiQ_PPA5530_power_1)]
+                    scalar_value_itech_2_voltage = float(ITech_2_voltage)
+                    scalar_value_itech_2_current = float(ITech_2_current)
+                    scalar_value_itech_2_power = float(ITech_2_power)
+                    #itech2_values = [scalar_value_itech_2_voltage,scalar_value_itech_2_current,scalar_value_itech_2_power]
 
-                    scalar_value_kinetiq_2_voltage = [float(KinetiQ_PPA5530_voltage_2)]
-                    scalar_value_kinetiq_2_current = [float(KinetiQ_PPA5530_current_2)]
-                    scalar_value_kinetiq_2_power = [float(KinetiQ_PPA5530_power_2)]
+                    scalar_value_kinetiq_1_voltage = float(KinetiQ_PPA5530_voltage_1)
+                    scalar_value_kinetiq_1_current = float(KinetiQ_PPA5530_current_1)
+                    scalar_value_kinetiq_1_power = float(KinetiQ_PPA5530_power_1)
+                    #kinetiq1_values = [scalar_value_kinetiq_1_voltage,scalar_value_kinetiq_1_current,scalar_value_kinetiq_1_power]
+
+                    scalar_value_kinetiq_2_voltage = float(KinetiQ_PPA5530_voltage_2)
+                    scalar_value_kinetiq_2_current = float(KinetiQ_PPA5530_current_2)
+                    scalar_value_kinetiq_2_power = float(KinetiQ_PPA5530_power_2)
+                    #kinetiq2_values = [scalar_value_kinetiq_2_voltage,scalar_value_kinetiq_2_current,scalar_value_kinetiq_2_power]
 
 
                     """
@@ -393,6 +417,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                         array_to_write[:len(c), i] = c
 
                     """save measured data """
+
                     itech1_values = (str(scalar_value_itech_1_voltage) + ";" +
                                      str(scalar_value_itech_1_current) + ";" +
                                      str(scalar_value_itech_1_power))
@@ -416,44 +441,80 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                                        self.filename_ext)
                     np.savetxt(filename_actual, array_to_write, delimiter=";")
 
-                    filename_actual_rigol = (self.filename_base + "_rigol_" +
+                    filename_actual_rigol_ch1 = (self.filename_base + "_rigol_ch1_" +
                                              str(self.input_voltage) + "_" +
                                              str(primary_actual) + "_" +
                                              str(secondary_actual) + "." +
                                              self.filename_ext)
-                    np.savetxt(filename_actual_rigol, arraylist_rigol_plot, delimiter=";")
+                    np.savetxt(filename_actual_rigol_ch1, arraylist_rigol_ch1_plot, delimiter=";")
+
+                    filename_actual_rigol_ch2 = (self.filename_base + "_rigol_ch2_" +
+                                             str(self.input_voltage) + "_" +
+                                             str(primary_actual) + "_" +
+                                             str(secondary_actual) + "." +
+                                             self.filename_ext)
+                    np.savetxt(filename_actual_rigol_ch2, arraylist_rigol_ch2_plot, delimiter=";")
 
                     filename_actual_itech_1_voltage = (self.filename_base + "_itech_1_" +
                                                        str(self.input_voltage) + "_" +
                                                        str(primary_actual) + "_" +
                                                        str(secondary_actual) + "." +
                                                        self.filename_ext)
-                    np.savetxt(filename_actual_itech_1_voltage, itech1_values, delimiter=";")
+                    #np.savetxt(filename_actual_itech_1_voltage, itech1_values, delimiter=";")
+                    with open(filename_actual_itech_1_voltage, "w", newline="") as file:
+                        writer = csv.writer(file, delimiter=' ')
+                        writer.writerow([itech1_values])
 
                     filename_actual_itech_2_voltage = (self.filename_base + "_itech_2_"+
                                                        str(self.input_voltage) + "_" +
                                                        str(primary_actual) + "_" + str(secondary_actual) + "." +
                                                        self.filename_ext)
-                    np.savetxt(filename_actual_itech_2_voltage, itech2_values, delimiter=";")
+                    #np.savetxt(filename_actual_itech_2_voltage, itech2_values, delimiter=";")
+                    with open(filename_actual_itech_2_voltage, "w", newline="") as file:
+                        writer = csv.writer(file, delimiter=' ')
+                        writer.writerow([itech2_values])
+
 
                     filename_actual_kinetiq_1_voltage = (self.filename_base + "_kinetiq_1_"+
                                                          str(self.input_voltage) + "_" +
                                                          str(primary_actual) + "_" +
                                                          str(secondary_actual) + "." +
                                                          self.filename_ext)
-                    np.savetxt(filename_actual_kinetiq_1_voltage, kinetiq1_values, delimiter=";")
+                    #np.savetxt(filename_actual_kinetiq_1_voltage, kinetiq1_values, delimiter=";")
+                    with open(filename_actual_kinetiq_1_voltage, "w", newline="") as file:
+                        writer = csv.writer(file, delimiter=' ')
+                        writer.writerow([kinetiq1_values])
 
                     filename_actual_kinetiq_2_voltage = (self.filename_base + "_kinetiq_2_"+
                                                          str(self.input_voltage) + "_" +
                                                          str(primary_actual) + "_" +
                                                          str(secondary_actual) + "." +
                                                          self.filename_ext)
-                    np.savetxt(filename_actual_kinetiq_2_voltage, kinetiq2_values, delimiter=";")
+                    #np.savetxt(filename_actual_kinetiq_2_voltage, kinetiq2_values, delimiter=";")
+                    with open(filename_actual_kinetiq_2_voltage, "w", newline="") as file:
+                        writer = csv.writer(file, delimiter=' ')
+                        writer.writerow([kinetiq2_values])
+
+                    filename_pcb_temp = (self.filename_base + "_pcb_temp_"+
+                                                         str(self.input_voltage) + "_" +
+                                                         str(primary_actual) + "_" +
+                                                         str(secondary_actual) + "." +
+                                                         self.filename_ext)
+                    np.savetxt(filename_pcb_temp, pcb_temp, delimiter=";")
+
+                    filename_scalar_value = (self.filename_base + "_scalar_value_"+
+                                                         str(self.input_voltage) + "_" +
+                                                         str(primary_actual) + "_" +
+                                                         str(secondary_actual) + "." +
+                                                         self.filename_ext)
+                    np.savetxt(filename_scalar_value, scalar_value , delimiter=";")
 
                     self.Rigol_DS1000Z.run()
                     self.ITech_IT9121_1.trigger(trigger_mode='OFF')
                     self.ITech_IT9121_2.trigger(trigger_mode='OFF')
+
                     self.KinetiQ_PPA5530.set_data_hold(hold='OFF')
+
 
                     # prep the next value of current
                     secondary_actual = secondary_actual + self.secondary_delta
@@ -503,3 +564,4 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
             self.primary_signal.emit(primary_actual)
             # trigger cleanup, when finished TODO a je to prav
             self.finished.emit()
+    print("Measurements: DONE")
