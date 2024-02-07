@@ -78,8 +78,8 @@ class MainApp(MAIN_window.AppMainClass):
 
         # connect max current line edit
         self.le_amp_norm.editingFinished.connect(self.amplitude_norm_set)
-        self.norm_max = 30
-        self.ref_gen.ref_amp_range(30)
+        self.norm_max = 15
+        self.ref_gen.ref_amp_range(self.norm_max)
 
         # zahtevam statusne podatke za data logger in generator signalov
         # if com port is open request parameters
