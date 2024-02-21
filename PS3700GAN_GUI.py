@@ -270,12 +270,15 @@ class MainApp(MAIN_window.AppMainClass):
         if self.lbl_state.text() == "Work":
             # send request to turn on the rectifier
             self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0000))
+            print("SENT: Turn on rectifier")
             # zero the reference values
             self.sld_phantom.setValue(0)
             self.sld_amp.setValue(0)
         if (self.lbl_state.text() == "Standby_cold") or (self.lbl_state.text() == "Standby_hot"):
             # send request to turn off the rectifier
+            # TODO zero primary secondary, ...
             self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0001))
+            print("SENT: Turn off rectifier")
         if self.lbl_state.text() == "Fault":
             # send request to turn off the rectifier
             self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0002))

@@ -1,16 +1,26 @@
 import socket_creation
 
-"""
-TODO:
-- set current limit (+/-)
-- set voltage on output
-- turn output on/ off
-- get output current
-- get output power
-"""
+
+
 class IT6000C():
+
+    """
+    def monkey_write(self, str):
+        # logiraš v datoteko
+        print(time.clock() + str)
+        # potem pa writaš na socket
+        self.addr._write(str)
+
+    def __init__(self, ip_or_name, socket = False, port = 0):
+        self.instance = socket_creation.create_socket(ip_or_name, socket, port)
+        self.addr = self.instance
+        self.addr._write = self.addr.write
+        self.addr.write = self.monkey_write
+
+    """
     def __init__(self, ip_or_name, socket = False, port = 0):
         self.addr = socket_creation.create_socket(ip_or_name, socket, port)
+
 
     def get_id(self):
         return self.addr.query("*IDN?")
@@ -75,6 +85,7 @@ class IT6000C():
 
         self.addr.write("SOURce:CURRent:OVER:PROTection:LEVel {0}".format(limit))
 
+
     def get_current_limit(self):
         return self.addr.query("SOURce:CURRent:OVER:PROTection:LEVel?")
 
@@ -95,6 +106,24 @@ class IT6000C():
 
     def get_output_voltage(self):
         return self.addr.query("FETCh:VOLTage?")
+
+    def set_positive_voltage_slew(self, slew_in_seconds):
+        """
+        sets the rise time of output voltage (positive). The setting is in seconds.Also accepts MIN, MAX and DEFault
+        Default slew rate: 0.1s
+        On this instrument, slew rate means time the instrument takes to reach set/ desired voltage. For example,
+        having slew rate set to 1 second means the instrument will reach set voltage of example 24V in 1 second
+        """
+        self.addr.write("VOLTage:SLEW:POSitive {0}".format(slew_in_seconds))
+
+    def set_negative_voltage_slew(self, slew_in_seconds):
+        """
+        sets the fall time of output voltage (negative). The setting is in seconds.Also accepts MIN, MAX and DEFault
+        Default slew rate: 0.1s
+                On this instrument, slew rate means time the instrument takes to reach set/ desired voltage. For example,
+        having slew rate set to 1 second means the instrument will reach set voltage of example 24V in 1 second
+        """
+        self.addr.write("VOLTage:SLEW:NEGative {0}".format(slew_in_seconds))
 
     def set_output_state(self, state = "ON"):
         assert state in ["ON", "OFF", 1, 0]
