@@ -5,11 +5,10 @@ splash_text = "Basic_GUI, Mitja Nemec\n"
 if hasattr(sys, 'frozen'):
     import pyi_splash
     pyi_splash.update_text(splash_text + "Importing modules")
-
 import struct
-import Basic_GUI_main_window
+import MAIN_window
 import os
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PySide6 import QtWidgets, QtGui, QtCore
 # za samo eno instanco applikacije
 import singleton
 
@@ -24,11 +23,16 @@ COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 states = [("Startup", COLOR_YELLOW), ("Standby_cold", COLOR_YELLOW), ("Standby_hot", COLOR_YELLOW),
           ("Work", COLOR_GREEN), ("Fault_sensed", COLOR_RED), ("Fault", COLOR_RED)]
 
-class MainApp(Basic_GUI_main_window.AppMainClass):
+
+class MainApp(MAIN_window.AppMainClass):
 
     def __init__(self, parent=None):
-        if getattr(sys, 'frozen', False):
+        if hasattr(sys, 'frozen'):
             pyi_splash.update_text(splash_text + "Building GUI")
+        if hasattr(sys, '_MEIPASS'):
+            self.app_path = sys._MEIPASS
+        else:
+            self.app_path = os.path.dirname(__file__)
 
         super().__init__(SERIAL_NUMBER)
         self.setWindowTitle("PS3700GAN_GUI")
@@ -37,7 +41,7 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         self.ping_count = 0
 
         self.commonitor.connect_rx_handler(0x0900, self.received_ping)
-        self.commonitor.connect_rx_handler(0x0D01, self.state_received)
+        self.commonitor.connect_rx_handler(0x0D01, self.measurements_received)
         self.commonitor.connect_rx_handler(0x0D02, self.settings_received)
 
         # connect buttons
@@ -59,13 +63,27 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         self.le_freq.editingFinished.connect(self.freq_set)
         self.le_dead_time.editingFinished.connect(self.dead_time_set)
 
+        self.sp_sign_leg_1.valueChanged.connect(self.sp_sign_leg_1_changed)
+        self.sp_sign_leg_2.valueChanged.connect(self.sp_sign_leg_2_changed)
+        self.sp_sign_leg_3.valueChanged.connect(self.sp_sign_leg_3_changed)
+        self.sp_sign_leg_4.valueChanged.connect(self.sp_sign_leg_4_changed)
+        self.sp_sign_leg_5.valueChanged.connect(self.sp_sign_leg_5_changed)
+        self.sp_sign_leg_6.valueChanged.connect(self.sp_sign_leg_6_changed)
+
+        self.spb_shift_leg_2.valueChanged.connect(self.spb_shift_leg_2_changed)
+        self.spb_shift_leg_3.valueChanged.connect(self.spb_shift_leg_3_changed)
+        self.spb_shift_leg_4.valueChanged.connect(self.spb_shift_leg_4_changed)
+        self.spb_shift_leg_5.valueChanged.connect(self.spb_shift_leg_5_changed)
+        self.spb_shift_leg_6.valueChanged.connect(self.spb_shift_leg_6_changed)
+
         # connect max current line edit
         self.le_amp_norm.editingFinished.connect(self.amplitude_norm_set)
-        self.norm_max = 5
+        self.norm_max = 15
+        self.ref_gen.ref_amp_range(self.norm_max)
 
         # zahtevam statusne podatke za data logger in generator signalov
         # if com port is open request parameters
-        if getattr(sys, 'frozen', False):
+        if hasattr(sys, 'frozen'):
             pyi_splash.update_text(splash_text + "Trying to open COM port")
         if self.commonitor.is_port_open():
             self.request_state()
@@ -83,6 +101,17 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         self.cb_leg4.setDisabled(True)
         self.cb_leg5.setDisabled(True)
         self.cb_leg6.setDisabled(True)
+        self.spb_shift_leg_2.setDisabled(True)
+        self.spb_shift_leg_3.setDisabled(True)
+        self.spb_shift_leg_4.setDisabled(True)
+        self.spb_shift_leg_5.setDisabled(True)
+        self.spb_shift_leg_6.setDisabled(True)
+        self.sp_sign_leg_1.setDisabled(True)
+        self.sp_sign_leg_2.setDisabled(True)
+        self.sp_sign_leg_3.setDisabled(True)
+        self.sp_sign_leg_4.setDisabled(True)
+        self.sp_sign_leg_5.setDisabled(True)
+        self.sp_sign_leg_6.setDisabled(True)
 
     def enable_modifications(self):
         self.le_freq.setEnabled(True)
@@ -93,6 +122,72 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         self.cb_leg4.setEnabled(True)
         self.cb_leg5.setEnabled(True)
         self.cb_leg6.setEnabled(True)
+        self.spb_shift_leg_2.setEnabled(True)
+        self.spb_shift_leg_3.setEnabled(True)
+        self.spb_shift_leg_4.setEnabled(True)
+        self.spb_shift_leg_5.setEnabled(True)
+        self.spb_shift_leg_6.setEnabled(True)
+        self.sp_sign_leg_1.setEnabled(True)
+        self.sp_sign_leg_2.setEnabled(True)
+        self.sp_sign_leg_3.setEnabled(True)
+        self.sp_sign_leg_4.setEnabled(True)
+        self.sp_sign_leg_5.setEnabled(True)
+        self.sp_sign_leg_6.setEnabled(True)
+
+    def sp_sign_leg_1_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_1.value())
+        self.commonitor.send_packet(0x0D11, data)
+
+    def sp_sign_leg_2_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_2.value())
+        self.commonitor.send_packet(0x0D12, data)
+
+    def sp_sign_leg_3_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_3.value())
+        self.commonitor.send_packet(0x0D13, data)
+
+    def sp_sign_leg_4_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_4.value())
+        self.commonitor.send_packet(0x0D14, data)
+
+    def sp_sign_leg_5_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_5.value())
+        self.commonitor.send_packet(0x0D15, data)
+
+    def sp_sign_leg_6_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.sp_sign_leg_6.value())
+        self.commonitor.send_packet(0x0D16, data)
+
+    def spb_shift_leg_2_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.spb_shift_leg_2.value())
+        self.commonitor.send_packet(0x0D22, data)
+
+    def spb_shift_leg_3_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.spb_shift_leg_3.value())
+        self.commonitor.send_packet(0x0D23, data)
+
+    def spb_shift_leg_4_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.spb_shift_leg_4.value())
+        self.commonitor.send_packet(0x0D24, data)
+
+    def spb_shift_leg_5_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.spb_shift_leg_5.value())
+        self.commonitor.send_packet(0x0D25, data)
+
+    def spb_shift_leg_6_changed(self):
+        # posljem paket po portu
+        data = struct.pack('<f', self.spb_shift_leg_6.value())
+        self.commonitor.send_packet(0x0D26, data)
 
     def legs_changed(self):
         num = 0
@@ -157,6 +252,7 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
             num = 30
         data = struct.pack('<f', num)
         self.commonitor.send_packet(0x0D03, data)
+        self.ref_gen.ref_amp_range(num)
 
     def request_state(self):
         self.commonitor.send_packet(0x0D00, None)
@@ -174,12 +270,15 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         if self.lbl_state.text() == "Work":
             # send request to turn on the rectifier
             self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0000))
+            print("SENT: Turn on rectifier")
             # zero the reference values
             self.sld_phantom.setValue(0)
             self.sld_amp.setValue(0)
         if (self.lbl_state.text() == "Standby_cold") or (self.lbl_state.text() == "Standby_hot"):
             # send request to turn off the rectifier
+            # TODO zero primary secondary, ...
             self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0001))
+            print("SENT: Turn off rectifier")
         if self.lbl_state.text() == "Fault":
             # send request to turn off the rectifier
             self.commonitor.send_packet(0x0D01, struct.pack('<h', 0x0002))
@@ -193,10 +292,25 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
 
         sw_freq = round(struct.unpack('<f', data[8:12])[0], 2)
         dead_time = round(struct.unpack('<f', data[12:16])[0], 2)
-        legs = round(struct.unpack('<h', data[16:18])[0], 2)
+        shift1 = struct.unpack('<f', data[16:20])[0]
+        shift2 = struct.unpack('<f', data[20:24])[0]
+        shift3 = struct.unpack('<f', data[24:28])[0]
+        shift4 = struct.unpack('<f', data[28:32])[0]
+        shift5 = struct.unpack('<f', data[32:36])[0]
+        shift6 = struct.unpack('<f', data[36:40])[0]
+
+        sign1 = struct.unpack('<f', data[40:44])[0]
+        sign2 = struct.unpack('<f', data[44:48])[0]
+        sign3 = struct.unpack('<f', data[48:52])[0]
+        sign4 = struct.unpack('<f', data[52:56])[0]
+        sign5 = struct.unpack('<f', data[56:60])[0]
+        sign6 = struct.unpack('<f', data[60:64])[0]
+
+        legs = round(struct.unpack('<h', data[64:68])[0], 2)
 
         self.le_amp_norm.blockSignals(True)
         self.le_amp_norm.setText("{:.1f}".format(current_norm))
+        self.ref_gen.ref_amp_range(current_norm)
         self.le_amp_norm.blockSignals(False)
 
         self.sld_phantom.blockSignals(True)
@@ -236,7 +350,55 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
         self.cb_leg6.setChecked(legs & 0x20)
         self.cb_leg6.blockSignals(False)
 
-    def state_received(self):
+        self.spb_shift_leg_1.blockSignals(True)
+        self.spb_shift_leg_1.setValue(shift1)
+        self.spb_shift_leg_1.blockSignals(False)
+
+        self.spb_shift_leg_2.blockSignals(True)
+        self.spb_shift_leg_2.setValue(shift2)
+        self.spb_shift_leg_2.blockSignals(False)
+
+        self.spb_shift_leg_3.blockSignals(True)
+        self.spb_shift_leg_3.setValue(shift3)
+        self.spb_shift_leg_3.blockSignals(False)
+
+        self.spb_shift_leg_4.blockSignals(True)
+        self.spb_shift_leg_4.setValue(shift4)
+        self.spb_shift_leg_4.blockSignals(False)
+
+        self.spb_shift_leg_5.blockSignals(True)
+        self.spb_shift_leg_5.setValue(shift5)
+        self.spb_shift_leg_5.blockSignals(False)
+
+        self.spb_shift_leg_6.blockSignals(True)
+        self.spb_shift_leg_6.setValue(shift6)
+        self.spb_shift_leg_6.blockSignals(False)
+
+        self.sp_sign_leg_1.blockSignals(True)
+        self.sp_sign_leg_1.setValue(sign1)
+        self.sp_sign_leg_1.blockSignals(False)
+
+        self.sp_sign_leg_2.blockSignals(True)
+        self.sp_sign_leg_2.setValue(sign2)
+        self.sp_sign_leg_2.blockSignals(False)
+
+        self.sp_sign_leg_3.blockSignals(True)
+        self.sp_sign_leg_3.setValue(sign3)
+        self.sp_sign_leg_3.blockSignals(False)
+
+        self.sp_sign_leg_4.blockSignals(True)
+        self.sp_sign_leg_4.setValue(sign4)
+        self.sp_sign_leg_4.blockSignals(False)
+
+        self.sp_sign_leg_5.blockSignals(True)
+        self.sp_sign_leg_5.setValue(sign5)
+        self.sp_sign_leg_5.blockSignals(False)
+
+        self.sp_sign_leg_6.blockSignals(True)
+        self.sp_sign_leg_6.setValue(sign6)
+        self.sp_sign_leg_6.blockSignals(False)
+
+    def measurements_received(self):
         # grab the data
         data = self.commonitor.get_data()
 
@@ -261,6 +423,8 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
 
         state = struct.unpack('<h', data[52:54])[0]
         mode = struct.unpack('<h', data[54:56])[0]
+
+        fault_flags = struct.unpack('<h', data[56:58])[0]
 
         self.lbl_cpu_load.setText("{:.1f}".format(cpu_load))
 
@@ -306,6 +470,29 @@ class MainApp(Basic_GUI_main_window.AppMainClass):
             self.sld_phantom.setDisabled(True)
             self.lbl_phantom.setDisabled(True)
 
+        # fault flags
+        """   bool    overcurrent:1;
+              bool    undervoltage:1;
+              bool    overvoltage:1;
+              bool    cpu_overrun:1;
+              bool    fault_registered:1;"""
+        if fault_flags & 0x0001:
+            self.lbl_flt_overcurrent.setStyleSheet(COLOR_RED)
+        else:
+            self.lbl_flt_overcurrent.setStyleSheet(COLOR_DEFAULT)
+        if fault_flags & 0x0002:
+            self.lbl_flt_undervoltage.setStyleSheet(COLOR_RED)
+        else:
+            self.lbl_flt_undervoltage.setStyleSheet(COLOR_DEFAULT)
+        if fault_flags & 0x0004:
+            self.lbl_flt_overvoltage.setStyleSheet(COLOR_RED)
+        else:
+            self.lbl_flt_overvoltage.setStyleSheet(COLOR_DEFAULT)
+        if fault_flags & 0x0008:
+            self.lbl_flt_cpu_overrun.setStyleSheet(COLOR_RED)
+        else:
+            self.lbl_flt_cpu_overrun.setStyleSheet(COLOR_DEFAULT)
+
 
 # glavna funkcija
 def main():
@@ -314,10 +501,9 @@ def main():
     # error: qt.qpa.plugin: Could not find the Qt platform plugin "xcb" in ""
     # This application failed to start because no Qt platform plugin could be initialized.
     # Reinstalling the application may fix this problem.
-
-    import PyQt5
-    pyqt = os.path.dirname(PyQt5.__file__)
-    os.environ['QT_PLUGIN_PATH'] = os.path.join(pyqt, "Qt/plugins")
+    #import PyQt5
+    #pyqt = os.path.dirname(PyQt5.__file__)
+    #os.environ['QT_PLUGIN_PATH'] = os.path.join(pyqt, "Qt/plugins")
 
     # A new instance of QApplication
     app = QtWidgets.QApplication(sys.argv)
@@ -326,7 +512,7 @@ def main():
     try:
         me = singleton.SingleInstance()
     except singleton.SingleInstanceException:
-        if getattr(sys, 'frozen', False):
+        if hasattr(sys, 'frozen'):
             pyi_splash.close()
         # tukaj bi lahko pokazal vsaj kaksno okno
         w = QtWidgets.QWidget()
@@ -335,17 +521,20 @@ def main():
         w.show()
         w.setWindowFlags(w.windowFlags() | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
         w.show()
+        w.activateWindow()
         sys.exit(0)
 
     form = MainApp()
+
     # Show the form
     form.show()
 
-    if getattr(sys, 'frozen', False):
+    if hasattr(sys, 'frozen'):
         pyi_splash.close()
 
+    form.activateWindow()
     # and execute the app
-    app.exec_()
+    app.exec()
 
 
 # start of the program

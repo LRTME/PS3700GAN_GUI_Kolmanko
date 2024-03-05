@@ -134,6 +134,15 @@ class DS1000Z:
     def trigger(self):
         self.addr.write(":TRIGger:IMM")
 
+    def trigger_single(self):
+        """
+        Set the oscilloscope to the single trigger mode.
+        This command is equivalent to any of the following two operations:
+        - pressing the SINGLE key on the front panel
+        - sending the :TRIGger:SWEep SINGle command.
+        """
+        self.addr.write(":SINGle")
+
     def get_measurement(self, item = "VMAX", type="CURR", channel=1):
         """
         get desired measurement.
@@ -229,14 +238,13 @@ class DS1000Z:
         """
 
         true_gain = 0
-
-        # if either min_value or max_value are out of bounds (are None), return error (for now; change in future?)
-        if min_value is None or max_value is None:
-            raise ValueError("Signal out of bounds. Please run the auto_scale_and_auto_offset function or manually "
-                             "adjust signal.")
+        if min_value == None:
+            min_value = 0
+        if max_value == None:
+            max_value = 0
 
         delta = max_value - min_value  #
-        target_gain = delta / 8  # oscilloscope has 8 vertical divisions
+        target_gain = abs(delta / 8)  # oscilloscope has 8 vertical divisions
 
         scale_array = [1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 1e1, 2e1, 5e1, 1e2, 2e2, 5e2, 1e4]
 
@@ -244,7 +252,10 @@ class DS1000Z:
             if target_gain > scale_array[array_range]:
                 array_range += 1
             else:
-                true_gain = scale_array[array_range]
+                if array_range == 1:
+                    true_gain = scale_array[array_range]
+                else:
+                    true_gain = scale_array[array_range - 1]
                 break
 
         self.manual_vertical_scale(true_gain, channel)
@@ -257,14 +268,11 @@ class DS1000Z:
         TESTED: TRUE
         RESULT: WORKING
         """
-        if min_value is None or max_value is None:
-            raise ValueError("Signal out of bounds. Please run auto_scale_and_auto_offset function or manually adjust"
-                             " signal size.")
 
         probe_ratio = float(self.get_probe_ratio(channel))
         vertical_scale = float(self.get_vertical_scale(channel))
 
-        offset = (max_value - min_value) / 2 + min_value
+        offset = (int(max_value) - int(min_value)) / 2 + int(min_value)
 
         if probe_ratio == 1:
             if vertical_scale >= 500e-3:
@@ -335,7 +343,7 @@ class DS1000Z:
                 while offset <= 8 * 1e4:  # 8*1e4 chosen because signal cannot be bigger than 1e4 per vertical division
 
                     self.manual_offset(-1 * offset, channel)
-                    offset += 0.2
+                    offset += min_value
                     max_value = self.get_max_voltage(channel)
                     if max_value is not None:
                         return max_value
@@ -347,7 +355,7 @@ class DS1000Z:
                 while offset <= 8 * 1e4:  # 8*1e4 chosen because signal cannot be bigger than 1e4 per vertical division
 
                     self.manual_offset(offset, channel)
-                    offset += 0.2
+                    offset += max_value
                     max_value = self.get_min_voltage(channel)
                     if min_value is not None:
                         return min_value
@@ -363,7 +371,7 @@ class DS1000Z:
             # set scale and offset off of gotten measurements
             self.set_auto_vertical_scale(min_value, max_value, channel)
             self.set_auto_offset(min_value, max_value, channel)
-
+            """
             # Recapture min/max for better resolution
             min_value = self.get_min_voltage(channel)
 
@@ -372,6 +380,7 @@ class DS1000Z:
             # Re-set scale and offset off of better resolution measurements
             self.set_auto_vertical_scale(min_value, max_value, channel)
             self.set_auto_offset(min_value, max_value, channel)
+            """
 
         else:
             print("Error: This should never happen.")

@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-import Basic_GUI_LOG_mod_dialog
-
-# Import the PyQt4 module we'll need
-from PyQt5 import QtWidgets, QtCore
-# timestamping received strings
+import GUI_log_dialog
+from PySide6 import QtWidgets, QtCore
 import datetime
 
+# keep only the last 50 lines
 LOG_length = 50
 
 
 # com stat dialog
-class Logger(QtWidgets.QDialog, Basic_GUI_LOG_mod_dialog.Ui_Dialog):
+class Logger(QtWidgets.QDialog, GUI_log_dialog.Ui_Dialog):
     def __init__(self, parent=None):
         QtWidgets.QDialog.__init__(self, parent)
         # This is defined in GUI_design.py file automatically
@@ -19,32 +17,32 @@ class Logger(QtWidgets.QDialog, Basic_GUI_LOG_mod_dialog.Ui_Dialog):
 
         self.setWindowTitle("Com log")
 
-        #lahko je tudi v ozadju
+        # the dialog can be in the background
         self.setModal(False)
 
         self.app = parent
 
         self.log = ""
 
-        # register all receive handlers
+        # register receive handler
         self.app.commonitor.connect_rx_handler(0xFFFF, self.string_log)
 
-        # ustvarim casovnik, ki bo vsak 0.25 sekunde osveziv podatke
+        # create a refresh timer
         self.update_timer = QtCore.QTimer()
         self.update_timer.timeout.connect(self.update_values)
         self.update_timer.start(250)
 
-        # prvic osvezim tekst
+        # initial refresh of the text
         self.tex_box.setText(self.log)
 
-        # povezem gumb za brisanje log-a
+        # bind the Clear button
         self.btn_clear_log.clicked.connect(self.clear_log)
 
-    # brisem log
+    # clear log
     def clear_log(self):
         self.log = ""
 
-    # za periodicno osvezevanje
+    # periodic refresh
     def update_values(self):
         self.tex_box.setText(self.log)
 
@@ -52,12 +50,12 @@ class Logger(QtWidgets.QDialog, Basic_GUI_LOG_mod_dialog.Ui_Dialog):
     def string_log(self):
         data = self.app.commonitor.get_data()
         text_log = str(data[:-1], "ascii")
-        # dodam uro kdaj sem tole dobil
+        # add timestamp
         text_time = str(datetime.datetime.now().isoformat())
         log_line = text_time + " " + text_log + "\n"
-        # shranim v log
+        # save in the log
         self.log = log_line + self.log
-        # ce je log prevelik, ga skrajšam
+        # if log is to big, shorten it
         nr_lines = self.log.count("\n")
         if nr_lines > LOG_length:
             lines = self.log.split("\n")
