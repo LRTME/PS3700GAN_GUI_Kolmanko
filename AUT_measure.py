@@ -293,6 +293,7 @@ class AUT_measurement(QtCore.QObject):
                     self.ITech_IT9121_2.trigger(trigger_mode='ON')
 
                     self.KinetiQ_PPA5530.set_data_hold(hold = 'ON')
+                    self.KinetiQ_PPA5530.trigger()
                     time.sleep(self.sleep_timer)
 
                     """ grab measured data """
@@ -430,6 +431,7 @@ class AUT_measurement(QtCore.QObject):
                     self.ITech_IT9121_1.trigger(trigger_mode='OFF')
                     self.ITech_IT9121_2.trigger(trigger_mode='OFF')
                     self.KinetiQ_PPA5530.set_data_hold(hold='OFF')
+                    self.KinetiQ_PPA5530.start()
 
                     # prep the next value of current
                     secondary_actual = secondary_actual + self.secondary_delta

@@ -15,13 +15,13 @@ class PPA5500:
     def get_id(self):
         return self.addr.query("*IDN?")
 
-    def start_measurement(self):
+    def start(self):
         """
         Initiates a new measurement, resets the range and smoothing.
         """
         self.addr.write("START")
 
-    def stop_measurement(self):
+    def stop(self):
 
         self.addr.write("STOP") # ABORT? SUSPEN?
 
