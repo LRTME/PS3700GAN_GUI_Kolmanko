@@ -22,7 +22,6 @@ COLOR_GREEN = "background-color:#32cd32;"
 COLOR_BRIGHT_RED = "background-color:#FF4646;"
 COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 
-
 class AUT_measurement(QtCore.QObject):
 
     # for measurement automation
