@@ -22,6 +22,14 @@ class IT9121:
     def get_id(self):
         return self.addr.query("*IDN?")
 
+    def set_capture_mode(self, continuous = "OFF"):
+        """
+        This command is used to enable or disable the state of continuous measurement period.
+        In off mode,that means to enable a single measurement.
+        """
+        assert continuous in ["ON", "OFF"]
+        self.addr.write("INITiate:CONTinuous {0}".format(continuous))
+
     def get_base_source_voltage(self, voltage = "DC"):
 
         assert voltage in ["DC", "AC"]
@@ -47,7 +55,6 @@ class IT9121:
             return self.addr.query("MEAS:CURR:DC?")
         else:
             return self.addr.query("MEAS:CURR:AC?")
-
 
     def get_RMS_source_current(self):
 
@@ -179,10 +186,18 @@ class IT9121:
 
         return self.addr.query("WAVE:TRIG:MODE?")
 
+    """
+    ## LEGACY CODE
     def trigger(self, trigger_mode = 'OFF'):
 
         assert trigger_mode in [0, 1, 'OFF', 'ON']
         self.addr.write("HOLD {0}".format(trigger_mode))
+    """
+    def trigger(self):
+        """
+        Generates a trigger signal in any mode
+        """
+        self.addr.write("TRIGger:IMMediate")
 
     def get_waveform_voltage(self):
 

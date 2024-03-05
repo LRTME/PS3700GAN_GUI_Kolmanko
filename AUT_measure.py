@@ -214,7 +214,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
         logging.info("{0}: Attempting to connect to ITech IT9121 (2)".format(datetime.datetime.now()))
 
         try:
-            self.ITech_IT9121_2 = IT9121.IT9121(ip_or_name = '212.235.184.149')
+            self.ITech_IT9121_2 = IT9121.IT9121(ip_or_name = '212.235.184.150')
         except ValueError:
             logging.error("{0}: Could not connect to ITech IT9121 (2)".format(datetime.datetime.now()))
             is_return = self.connection_error_message_box('ITech IT9121 (2)')
@@ -305,8 +305,8 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
 
             logging.info("{0}: Setting ITech IT6000C positive voltage slew to 1".format(datetime.datetime.now()))
             self.ITech_IT6000C.set_positive_voltage_slew(1)
-            logging.info("{0}: Setting ITech IT6000C current limits to 5, -5".format(datetime.datetime.now()))
-            self.ITech_IT6000C.set_current_limits(5, -5)
+            logging.info("{0}: Setting ITech IT6000C current limits to 20, -20".format(datetime.datetime.now()))
+            self.ITech_IT6000C.set_current_limits(20, -20)
             logging.info("{0}: Setting ITech IT6000C negative voltage slew to 1".format(datetime.datetime.now()))
             self.ITech_IT6000C.set_negative_voltage_slew(1)
             logging.info("{0}: Setting ITech IT6000C output voltage to {1}".format(datetime.datetime.now(),
@@ -317,6 +317,21 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
 
             logging.info("{0}: Setting ITech IT6000C to local".format(datetime.datetime.now()))
             self.ITech_IT6000C.set_system_local()
+
+            logging.info("{0}: Setting ITech IT9121 (1) to remote".format(datetime.datetime.now()))
+            self.ITech_IT9121_1.set_system_remote()
+            logging.info("{0}: Setting ITech IT9121 (2) to remote".format(datetime.datetime.now()))
+            self.ITech_IT9121_2.set_system_remote()
+
+            logging.info("{0}: Setting ITech IT9121 (1) capture mode to not continuous".format(datetime.datetime.now()))
+            self.ITech_IT9121_1.set_capture_mode(continuous = "OFF")
+            logging.info("{0}: Setting ITech IT9121 (2) capture mode to not continuous".format(datetime.datetime.now()))
+            self.ITech_IT9121_2.set_capture_mode(continuous="OFF")
+
+            logging.info("{0}: Setting ITech IT9121 (1) to local".format(datetime.datetime.now()))
+            self.ITech_IT9121_1.set_system_local()
+            logging.info("{0}: Setting ITech IT9121 (3) to local".format(datetime.datetime.now()))
+            self.ITech_IT9121_2.set_system_local()
 
             # checking for errors...
             print("IT6000C error: ",self.ITech_IT6000C.read_error())
@@ -425,7 +440,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
 
                     self.measurement_number = self.measurement_number + 1
 
-                    self.sleep_timer = 0.05
+                    self.sleep_timer = 0.1
                     # self.Rigol_DS1000Z.set_trigger_mode('SING')  # set trigger status to single
 
                     logging.info(
@@ -447,11 +462,11 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
 
                     logging.info(
                         "{0}: Setting ITech IT9121 (1) to run mode (trigger = OFF)".format(datetime.datetime.now()))
-                    self.ITech_IT9121_1.trigger(trigger_mode='OFF')
+                    self.ITech_IT9121_1.trigger()
 
                     logging.info(
                         "{0}: Setting ITech IT9121 (2) to run mode (trigger = OFF)".format(datetime.datetime.now()))
-                    self.ITech_IT9121_2.trigger(trigger_mode='OFF')
+                    self.ITech_IT9121_2.trigger()
 
                     logging.info(
                         "{0}: Setting KinetiQ PPA5530 to run mode (hold = OFF)".format(datetime.datetime.now()))
@@ -464,16 +479,17 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     time.sleep(self.sleep_timer)
 
                     logging.info(
-                        "{0}: Setting Rigol DS1000Z to stop mode (Trigger = ON)".format(datetime.datetime.now()))
-                    self.Rigol_DS1000Z.stop()
+                        "{0}: Setting Rigol DS1000Z to SINGLE trigger".format(datetime.datetime.now()))
+                    self.Rigol_DS1000Z.trigger_single()
+
 
                     logging.info(
                         "{0}: Setting ITech IT9121 (1) to stop mode (Trigger = ON)".format(datetime.datetime.now()))
-                    self.ITech_IT9121_1.trigger(trigger_mode='ON')
+                    self.ITech_IT9121_1.trigger()
 
                     logging.info(
                         "{0}: Setting ITech IT9121 (2) to stop mode (Trigger = ON)".format(datetime.datetime.now()))
-                    self.ITech_IT9121_2.trigger(trigger_mode='ON')
+                    self.ITech_IT9121_2.trigger()
 
                     logging.info(
                         "{0}: Setting KinetiQ PPA5530 to run mode (hold = OFF)".format(datetime.datetime.now()))
@@ -484,6 +500,12 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     """ grab measured data """
                     logging.info(
                         "{0}: Grabbing measured data".format(datetime.datetime.now()))
+
+                    # check if rigol trigger is done
+                    while True:
+                        trigger_status = self.Rigol_DS1000Z.get_trigger_status()
+                        if trigger_status == "STOP":
+                            break
 
                     logging.info(
                         "{0}: Grabbing Rigol DS1000Z captured waveform on channel 1".format(datetime.datetime.now()))
@@ -498,29 +520,34 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     ITech_1_voltage = self.ITech_IT9121_1.get_base_source_voltage(voltage = 'DC')
 
                     logging.info(
+                        "{0}: Grabbing ITech IT9121 (1) captured voltage".format(datetime.datetime.now()))
+                    ITech_2_voltage = self.ITech_IT9121_2.get_base_source_voltage(voltage='DC')
+
+                    time.sleep(self.sleep_timer)
+
+                    logging.info(
                         "{0}: Grabbing ITech IT9121 (1) captured current".format(datetime.datetime.now()))
                     ITech_1_current = self.ITech_IT9121_1.get_base_source_current(current ='DC')
+
+                    logging.info(
+                        "{0}: Grabbing ITech IT9121 (1) captured current".format(datetime.datetime.now()))
+                    ITech_2_current = self.ITech_IT9121_2.get_base_source_current(current='DC')
+
+                    time.sleep(self.sleep_timer)
 
                     logging.info(
                         "{0}: Grabbing ITech IT9121 (1) captured active power".format(datetime.datetime.now()))
                     ITech_1_power = self.ITech_IT9121_1.get_active_power()
 
                     logging.info(
-                        "{0}: Setting ITech IT9121 (1) to local".format(datetime.datetime.now()))
-                    self.ITech_IT9121_1.set_system_local()
-
-
-                    logging.info(
-                        "{0}: Grabbing ITech IT9121 (1) captured voltage".format(datetime.datetime.now()))
-                    ITech_2_voltage = self.ITech_IT9121_2.get_base_source_voltage(voltage='DC')
-
-                    logging.info(
-                        "{0}: Grabbing ITech IT9121 (1) captured current".format(datetime.datetime.now()))
-                    ITech_2_current = self.ITech_IT9121_2.get_base_source_current(current='DC')
-
-                    logging.info(
                         "{0}: Grabbing ITech IT9121 (1) captured active power".format(datetime.datetime.now()))
                     ITech_2_power = self.ITech_IT9121_2.get_active_power()
+
+                    time.sleep(self.sleep_timer)
+
+                    logging.info(
+                        "{0}: Setting ITech IT9121 (1) to local".format(datetime.datetime.now()))
+                    self.ITech_IT9121_1.set_system_local()
 
                     logging.info(
                         "{0}: Setting ITech IT9121 (1) to local".format(datetime.datetime.now()))
@@ -534,6 +561,8 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                         "{0}: Grabbing KinetiQ PPA5530 voltage on phase 1".format(datetime.datetime.now()))
                     KinetiQ_PPA5530_voltage_2 = self.KinetiQ_PPA5530.get_voltage(phase=1)
 
+                    time.sleep(self.sleep_timer)
+
                     logging.info(
                         "{0}: Grabbing KinetiQ PPA5530 current on phase 3".format(datetime.datetime.now()))
                     KinetiQ_PPA5530_current_1 = self.KinetiQ_PPA5530.get_current(phase=3)
@@ -541,6 +570,8 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     logging.info(
                         "{0}: Grabbing KinetiQ PPA5530 current on phase 1".format(datetime.datetime.now()))
                     KinetiQ_PPA5530_current_2 = self.KinetiQ_PPA5530.get_current(phase=1)
+
+                    time.sleep(self.sleep_timer)
 
                     logging.info(
                         "{0}: Grabbing KinetiQ PPA5530 power on phase 3".format(datetime.datetime.now()))
@@ -760,11 +791,11 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     # TODO RE-ENABLE
                     logging.info(
                         "{0}: Setting ITech IT9121 (1) to run mode (Trigger = OFF)".format(datetime.datetime.now()))
-                    self.ITech_IT9121_1.trigger(trigger_mode='OFF')
+                    self.ITech_IT9121_1.trigger()
 
                     logging.info(
                         "{0}: Setting ITech IT9121 (2) to run mode (Trigger = OFF)".format(datetime.datetime.now()))
-                    self.ITech_IT9121_2.trigger(trigger_mode='OFF')
+                    self.ITech_IT9121_2.trigger()
 
                     logging.info(
                         "{0}: Setting KinetiQ PPA5530 to run mode (Hold = OFF)".format(datetime.datetime.now()))

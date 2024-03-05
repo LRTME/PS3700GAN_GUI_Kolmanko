@@ -134,6 +134,15 @@ class DS1000Z:
     def trigger(self):
         self.addr.write(":TRIGger:IMM")
 
+    def trigger_single(self):
+        """
+        Set the oscilloscope to the single trigger mode.
+        This command is equivalent to any of the following two operations:
+        - pressing the SINGLE key on the front panel
+        - sending the :TRIGger:SWEep SINGle command.
+        """
+        self.addr.write(":SINGle")
+
     def get_measurement(self, item = "VMAX", type="CURR", channel=1):
         """
         get desired measurement.
