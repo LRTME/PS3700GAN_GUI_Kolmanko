@@ -203,7 +203,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
         logging.info("{0}: Attempting to connect to ITech IT9121 (1)".format(datetime.datetime.now()))
 
         try:
-            self.ITech_IT9121_1 = IT9121.IT9121(ip_or_name = '212.235.184.148')
+            self.ITech_IT9121_1 = IT9121.IT9121(ip_or_name = '212.235.184.149')
         except ValueError:
             logging.error("{0}: Could not connect to ITech IT9121 (1)".format(datetime.datetime.now()))
             is_return = self.connection_error_message_box('ITech IT9121 (1)')
@@ -440,7 +440,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
 
                     self.measurement_number = self.measurement_number + 1
 
-                    self.sleep_timer = 0.1
+                    self.sleep_timer = 0.01
                     # self.Rigol_DS1000Z.set_trigger_mode('SING')  # set trigger status to single
 
                     logging.info(
@@ -477,6 +477,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     #self.ITech_IT6000C.set_system_local()
 
                     time.sleep(self.sleep_timer)
+                    time.sleep(1)
 
                     logging.info(
                         "{0}: Setting Rigol DS1000Z to SINGLE trigger".format(datetime.datetime.now()))
@@ -537,11 +538,11 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
 
                     logging.info(
                         "{0}: Grabbing ITech IT9121 (1) captured active power".format(datetime.datetime.now()))
-                    ITech_1_power = self.ITech_IT9121_1.get_active_power()
+                    ITech_1_power = self.ITech_IT9121_1.get_apparent_power()
 
                     logging.info(
                         "{0}: Grabbing ITech IT9121 (1) captured active power".format(datetime.datetime.now()))
-                    ITech_2_power = self.ITech_IT9121_2.get_active_power()
+                    ITech_2_power = self.ITech_IT9121_2.get_apparent_power()
 
                     time.sleep(self.sleep_timer)
 

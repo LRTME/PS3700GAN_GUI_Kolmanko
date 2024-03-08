@@ -265,3 +265,38 @@ class IT9121:
         """
 
         self.addr.write("SYST:LOC")
+
+    def set_averaging(self, averaging = "ON", type = "LINE",linear_averaging_type = "REP",number_of_samples = 10):
+        """
+        Set the status of data averaging.
+        averaging can have two values:
+        ON | 1: Enables averaging of captured data
+        OFF | 0: Disables averaging of captured data
+        type has two values:
+        LINE: Linear averaging, used for constant values
+        EXP: Exponentian averaging, used for speradic values
+        if type is set to LINE, linear averaging type needs to be set. It can have two values:
+        REP: Repeating averaging
+        MOV: Moving averaging
+        Number of samples taken for averaging can be set. The maximum value is 64 and minimum is 1.
+        """
+        assert averaging in [1, 0, "ON", "OFF"]
+        assert type in ["LINE", "EXP"]
+        assert linear_averaging_type in ["REP", "MOV"]
+        if number_of_samples < 1:
+            raise ValueError("Entered value of averaging samples is below the minimum. "
+                             "Minimum number of possible samples is 1.")
+        if number_of_samples > 64:
+            raise ValueError("Entered value of averaging samples is above the maximum. "
+                             "Maximum number of possible samples is 64.")
+
+        self.addr.write("AVERage:{0}".format(averaging))
+
+        if averaging == "ON" or averaging == 1:
+            self.addr.write("AVERage:TYPE {0}".format(type))
+
+            if type == "LINE":
+                self.addr.write("AVERage:TCONtrol {0}".format(linear_averaging_type))
+
+            self.addr.write("AVERage:COUNt {0}".format(number_of_samples))
+
