@@ -23,7 +23,11 @@ COLOR_GREEN = "background-color:#32cd32;"
 COLOR_BRIGHT_RED = "background-color:#FF4646;"
 COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 
+<<<<<<< HEAD
+class AUT_measurement(QtCore.QObject):
+=======
 class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Dialog):
+>>>>>>> 7e0080b95bdd2710fa5e8aca0324bc3bb0af8b3d
 
     # for measurement automation
     finished = QtCore.Signal()
@@ -495,7 +499,11 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     logging.info(
                         "{0}: Setting KinetiQ PPA5530 to run mode (hold = OFF)".format(datetime.datetime.now()))
                     self.KinetiQ_PPA5530.set_data_hold(hold = 'ON')
+<<<<<<< HEAD
+                    self.KinetiQ_PPA5530.trigger()
+=======
 
+>>>>>>> 7e0080b95bdd2710fa5e8aca0324bc3bb0af8b3d
                     time.sleep(self.sleep_timer)
 
                     """ grab measured data """
@@ -801,6 +809,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
                     logging.info(
                         "{0}: Setting KinetiQ PPA5530 to run mode (Hold = OFF)".format(datetime.datetime.now()))
                     self.KinetiQ_PPA5530.set_data_hold(hold='OFF')
+                    self.KinetiQ_PPA5530.start()
 
                     # display time elapsed
                     self.time_elapsed_seconds = round(time.time() - self.measurement_start_time,2)
