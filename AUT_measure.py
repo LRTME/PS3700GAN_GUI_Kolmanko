@@ -23,11 +23,13 @@ COLOR_GREEN = "background-color:#32cd32;"
 COLOR_BRIGHT_RED = "background-color:#FF4646;"
 COLOR_DEFAULT = "background-color:rgba(255, 255, 255, 0);"
 
+"""
 <<<<<<< HEAD
 class AUT_measurement(QtCore.QObject):
 =======
+"""
 class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Dialog):
->>>>>>> 7e0080b95bdd2710fa5e8aca0324bc3bb0af8b3d
+#>>>>>>> 7e0080b95bdd2710fa5e8aca0324bc3bb0af8b3d
 
     # for measurement automation
     finished = QtCore.Signal()
@@ -184,6 +186,8 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
         # if any instruments fail to connect, raise exception
         logging.info("{0}: Starting connection attempts to instruments".format(datetime.datetime.now()))
         logging.info("{0}: Attempting to connect to Rigol DS1000Z".format(datetime.datetime.now()))
+
+        # TODO: Check and set ITech IT9121 IP
         try:
             self.Rigol_DS1000Z = DS1000Z.DS1000Z(ip_or_name = 'DS1104Z')
         except ValueError:
@@ -272,7 +276,7 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
 
         logging.info("{0}: Initial points set; Primary: {1}, Secondary: {2}".format(datetime.datetime.now(),
                                                                                     primary_actual,
-                                                                                    secondary_actual))
+                                                                            secondary_actual))
 
         self.measurement_start_time = time.time()
 
@@ -397,8 +401,8 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
 
             run_once = True
 
-            #while primary_actual <= self.primary_stop:
-            while run_once:
+            while primary_actual <= self.primary_stop:
+            #while run_once:
 
                 run_once = False
                 # exit if required
@@ -498,12 +502,9 @@ class AUT_measurement(QtWidgets.QDialog, GUI_automatic_measurements_dialog.Ui_Di
 
                     logging.info(
                         "{0}: Setting KinetiQ PPA5530 to run mode (hold = OFF)".format(datetime.datetime.now()))
-                    self.KinetiQ_PPA5530.set_data_hold(hold = 'ON')
-<<<<<<< HEAD
+                    #self.KinetiQ_PPA5530.set_data_hold(hold = 'ON')
                     self.KinetiQ_PPA5530.trigger()
-=======
 
->>>>>>> 7e0080b95bdd2710fa5e8aca0324bc3bb0af8b3d
                     time.sleep(self.sleep_timer)
 
                     """ grab measured data """
